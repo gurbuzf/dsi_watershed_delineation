@@ -1,7 +1,7 @@
 #Custom
 data/drainage_direction_TR.tif
 data/flow_accumulation_TR.tif
-data/vector/watershed_borders.geojson
+
 src/__pycache__/
 # Byte-compiled / optimized / DLL files
 __pycache__/

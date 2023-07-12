@@ -1,8 +1,7 @@
 import rasterio
 import numpy as np
 from src.utils import haversine_distance
-
-VERBOSE = True
+from run_config import VERBOSE, PIXEL2SEARCH
 
 def read_flow_accumulation_tif(path_flow_acc):
     """
@@ -60,10 +59,10 @@ def resample_matrix(central_coord, n):
     cols = matrix_row_col[:, 1]
     return rows, cols
 
-def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=1):
+def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=PIXEL2SEARCH):
     """
     Processes flow accumulation data to identify the new coordinates of the pixel neighboring the 
-    point located at coord. Returns the coordinate of the pixel with the highest flow accumulation.  
+    point located at coord. Returns the coordinate of the pixel  with the highest flow accumulation.  
 
     Args:
         data (object): Object of flow accumulation [tif] raster data.
