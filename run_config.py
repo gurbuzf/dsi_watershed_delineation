@@ -30,3 +30,5 @@ VERBOSE = True
 # in search of the neigboring pixel with the highest flow accumualtion.
 # 1 is recommended to reduce the potential deviations from the original pour point.
 PIXEL2SEARCH = 1
+
+RESULTS = "../results"
