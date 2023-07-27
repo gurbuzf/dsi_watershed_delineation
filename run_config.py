@@ -31,4 +31,7 @@ VERBOSE = True
 # 1 is recommended to reduce the potential deviations from the original pour point.
 PIXEL2SEARCH = 1
 
+# The directory where the results to be stored.
 RESULTS = "../results"
+
+MAX_STRAHLER = 2

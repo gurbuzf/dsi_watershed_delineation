@@ -51,7 +51,7 @@ def check_config_file_validity():
 
     if VERBOSE not in [True, False]:
         raise ValueError("VERBOSE can only be True, False, 1, or 0. "
-                         "Please check the VERBOSE parameter.")
+                         "Please check the VERBOSE parameter in run_config.py.")
     
     if not os.path.isdir(RESULTS):
         warnings.warn(f"{RESULTS} directory/folder does not exist! It will be generated!")

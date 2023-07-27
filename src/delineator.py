@@ -1,35 +1,59 @@
-import rasterio 
+
 import numpy as np
+import rasterio
 from numba import njit
+import pandas as pd
+import geopandas as gpd
 
-def read_drainage_direction(drainage_direction_path, pour_point_coord):
+import rasterio
+
+import rasterio
+
+def read_drainage_direction(drainage_direction_path):
     """
-    Reads the drainage direction data from a TIFF file.
+    Read drainage direction data from a TIFF file.
 
-    Parameters:
+    Args:
         drainage_direction_path (str): File path of the drainage direction TIFF.
-        pour_point_coord (tuple): Coordinates of the pour point in the format (x, y).
 
     Returns:
-        tuple: A tuple containing the drainage direction data as a NumPy array,
-               the pour point coordinates in the TIFF, and the metadata profile of the TIFF.
+        tuple: A tuple containing the drainage direction data as a NumPy array, the TIFF profile, and the rasterio dataset object.
+
+    Raises:
+        FileNotFoundError: If the TIFF file is not found or cannot be opened.
+        ValueError: If the TIFF file does not contain the expected drainage direction data.
 
     Notes:
         - The function uses the rasterio library to read the TIFF file.
-        - The drainage direction data is typically represented as an array where each
-          cell represents the direction of flow.
-        - The pour point coordinates are used to locate the specific cell in the TIFF.
-        - The metadata profile contains information about the TIFF such as its spatial
-          reference system, resolution, and other properties.
+        - The drainage direction data is typically represented as a 2D array where each cell represents the direction of flow.
+        - The function reads the first band of the TIFF file (band index 1) to extract the drainage direction data.
+        - The rasterio dataset object (rasterio.io.DatasetReader) is also returned to allow further manipulation of the data if needed.
+
+    Example:
+        # Read drainage direction data from a TIFF file
+        drainage_direction_path = "path/to/drainage_direction.tif"
+        drainage_direction, tiff_profile, dr_dir_source = read_drainage_direction(drainage_direction_path)
+
+        # Perform further operations with the drainage_direction data, tiff_profile, or the dr_dir_source object
 
     """
+    try:
+        with rasterio.open(drainage_direction_path) as src:
+            # Check if the dataset has exactly one band
+            if src.count != 1:
+                raise ValueError("The TIFF file should have exactly one band containing the drainage direction data.")
+            
+            drainage_direction = src.read(1)
 
-    with rasterio.open(drainage_direction_path) as src:
-        drainage_direction = src.read(1)
-        pour_point_xy = src.index(pour_point_coord[0], pour_point_coord[1])
-        profile = src.profile
+            tiff_profile = src.profile
+            return drainage_direction, tiff_profile, src
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file '{drainage_direction_path}' is not found or cannot be opened.")
+    except rasterio.RasterioIOError:
+        raise ValueError(f"The file '{drainage_direction_path}' does not contain the expected drainage direction data.")
 
-    return drainage_direction, pour_point_xy, profile
+
+
 
 def calculate_upstream_v1(drainage_direction, pour_point_coords):
     """
