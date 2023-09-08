@@ -1,10 +1,12 @@
 #Custom
 data/drainage_direction_TR.tif
 data/flow_accumulation_TR.tif
-data/vector/watershed/*
-data/vector/river/*
-data/raster/flow_accumulation/*
-data/raster/drainage_direction/*
+data/vector/watershed/*.qmd
+data/vector/river/*.qmd
+data/vector/river/TR21.geojson
+data/raster/flow_accumulation/*.tif.aux.xml
+data/raster/drainage_direction/*.tif.aux.xml
+data/raster/flow_accumulation/TR21.tif
 
 src/__pycache__/
 # Byte-compiled / optimized / DLL files
