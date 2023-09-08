@@ -2,7 +2,7 @@
 # Single Mode:
 # Partial Mode:
 
-MODE = 'single'
+MODE = 'partial'
 
 # The directory of the txt file including outlet points.
 # The file must be tab limited.
@@ -17,11 +17,11 @@ OUTLETS = "../data/outlets.txt"
 # If single MODE is used, this becomes trivial. This can be set None or empty string "".
 WATERSHEDS = "../data/vector/simplified_watershed_borders.geojson" 
 
-RIVERS = "../data/vector/river/TR03.geojson"
+RIVERS = "../data/vector/river/"
 
-FLOW_ACCUMULATION = "../data/raster/flow_accumulation/TR03.tif"
+FLOW_ACCUMULATION = "../data/raster/flow_accumulation/"
 
-DRAINAGE_DIRECTION = "../data/raster/drainage_direction/TR03.tif"
+DRAINAGE_DIRECTION = "../data/raster/drainage_direction/"
 
 # True if the progress of the calculations is wanted to be printed out.
 VERBOSE = False 

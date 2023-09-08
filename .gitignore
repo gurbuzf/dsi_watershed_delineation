@@ -1,6 +1,10 @@
 #Custom
 data/drainage_direction_TR.tif
 data/flow_accumulation_TR.tif
+data/vector/watershed/*
+data/vector/river/*
+data/raster/flow_accumulation/*
+data/raster/drainage_direction/*
 
 src/__pycache__/
 # Byte-compiled / optimized / DLL files
