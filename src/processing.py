@@ -1,11 +1,12 @@
 import pandas as pd
 import geopandas as gpd
+import fiona
 import os
+import csv
 from src.snap_pour_point import calculate_new_pour_point
-from src.delineator import calculate_upstream_v2  
+from src.delineator import calculate_upstream_v2
 from src.polygonize import raster_to_polygon, rasterize_array
-
-from run_config import OUTLETS,  PIXEL2SEARCH
+from configuration import OUTLETS,  PIXEL2SEARCH, VECTOR_EXTENSION
 
 def read_outlets(path):
     """
@@ -16,10 +17,18 @@ def read_outlets(path):
     Returns:
         None if all column names are in col_headers, an error otherwise.
     """
+    with open(path, "r") as f:
+        _first_row = f.readlines(1)
+    sniffer = csv.Sniffer()
+    dialect = sniffer.sniff(_first_row[0])
+
     try:
-        points = pd.read_csv(path, sep='\t',encoding="utf8")
+        points = pd.read_csv(path, encoding="utf-8-sig", sep=dialect.delimiter)
     except UnicodeDecodeError:
-        points = pd.read_csv(path, sep='\t', encoding="windows-1254")
+        points = pd.read_csv(path, encoding="windows-1254",
+                             sep=dialect.delimiter)
+
+    points.columns = [col.strip() for col in points.columns]
 
     col_headers = ['id', 'name', 'long', 'lat', 'area[km2]']
     missing_cols = [col for col in col_headers if col not in points.columns]
@@ -29,8 +38,9 @@ def read_outlets(path):
             f"The following columns are missing from the DataFrame: {missing_cols}. "
             f"Please add these columns to the DataFrame or update the column headers in {OUTLETS}.")
     else:
-        return gpd.GeoDataFrame(points, geometry=gpd.points_from_xy(points.long, points.lat), crs = "EPSG:4326")
-    
+        return gpd.GeoDataFrame(points, geometry=gpd.points_from_xy(points.long, points.lat), crs="EPSG:4326")
+
+
 def join_watersheds2points(points, path2watershed):
     """
     Joins watershed information to points based on spatial relationship and returns the resulting GeoPandas DataFrame.
@@ -78,14 +88,15 @@ def load_river_network(path2rivernetwork):
     """
     # Load the river network data as a GeoDataFrame
     river_vector = gpd.read_file(path2rivernetwork)
-
+    river_vector.crs = 'epsg:4326'
     return river_vector
 
+
 def clip_river_network(
-    river_network: gpd.GeoDataFrame, 
-    subbasin_polygon: gpd.GeoDataFrame, 
-    max_strahler_order: int, 
-    line_save_path: str = None):
+        river_network: gpd.GeoDataFrame,
+        subbasin_polygon: gpd.GeoDataFrame,
+        max_strahler_order: int,
+        line_save_path: str = None):
     """
     Clips a river network GeoDataFrame using a subbasin polygon and optionally saves the clipped river network as a new GeoJSON file.
 
@@ -100,26 +111,34 @@ def clip_river_network(
     """
     # Clip the river network to the subbasin polygon
     clipped_river_network = gpd.clip(river_network, subbasin_polygon)
-    
+
     try:
-        clipped_river_network = clipped_river_network[clipped_river_network["strahler"] >= max_strahler_order]
+        clipped_river_network = clipped_river_network[clipped_river_network["strahler"]
+                                                      >= max_strahler_order]
     except KeyError:
-        raise KeyError("A column named 'strahler' is not found in river network attribute table! MAX_STRAHLER cannot be applied!")
-    
+        raise KeyError(
+            "A column named 'strahler' is not found in river network attribute table! MAX_STRAHLER cannot be applied!")
+
     feedback = {
         "status": "success" if clipped_river_network.shape[0] > 0 else "fail",
         "message": "no rivers clipped within the given basin." if clipped_river_network.shape[0] == 0 else ""
     }
-    
+
     # Save the clipped river network as a new GeoJSON file, if output_file is provided
     if line_save_path is not None:
-        if not line_save_path.endswith('.geojson'):
-            line_save_path += '.geojson'
+        if not line_save_path.endswith(f'.{VECTOR_EXTENSION}'):
+            line_save_path += f'.{VECTOR_EXTENSION}'
         if feedback["status"] == "success":
-            clipped_river_network.to_file(line_save_path, driver='GeoJSON')
+
+            if VECTOR_EXTENSION == "kml":
+                fiona.supported_drivers['KML'] = 'rw'
+                clipped_river_network.to_file(line_save_path,  driver='KML')
+
+            elif VECTOR_EXTENSION == "geojson":
+                clipped_river_network.to_file(line_save_path, driver="GeoJSON")
         else:
             pass
-    
+
     return clipped_river_network, feedback
 
 
@@ -139,18 +158,20 @@ def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
 
     """
 
-    points_copy.loc[points_copy["id"]==row.id, "snap_long"] = new_pour_point[0]
-    points_copy.loc[points_copy["id"]==row.id, "snap_lat"] = new_pour_point[1]
-    points_copy.loc[points_copy["id"]==row.id, "CalculatedArea[km2]"] = area
-    points_copy.loc[points_copy["id"]==row.id, "status"] = feedback["status"]
-    points_copy.loc[points_copy["id"]==row.id, "comment"] = feedback["message"]
+    points_copy.loc[points_copy["id"] ==
+                    row.id, "snap_long"] = new_pour_point[0]
+    points_copy.loc[points_copy["id"] ==
+                    row.id, "snap_lat"] = new_pour_point[1]
+    points_copy.loc[points_copy["id"] == row.id, "CalculatedArea[km2]"] = area
+    points_copy.loc[points_copy["id"] == row.id, "status"] = feedback["status"]
+    points_copy.loc[points_copy["id"] ==
+                    row.id, "comment"] = feedback["message"]
 
     return points_copy
 
 
-
 def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_dir_src,
-                            tif_profile, river_vector, MAX_STRAHLER, RESULTS):
+                             tif_profile, river_vector, MAX_STRAHLER, RESULTS):
     """
     Process watershed points and update points_copy with watershed information.
 
@@ -175,24 +196,29 @@ def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_d
         print(f"[+] Processing {row.id}.")
 
         # Calculate new pour point
-        new_pour_point = calculate_new_pour_point(accum, pixel_size, (row.long, row.lat), PIXEL2SEARCH)
-        new_pour_point_xy = dr_dir_src.index(new_pour_point[0], new_pour_point[1])
+        new_pour_point = calculate_new_pour_point(
+            accum, pixel_size, (row.long, row.lat), PIXEL2SEARCH)
+        new_pour_point_xy = dr_dir_src.index(
+            new_pour_point[0], new_pour_point[1])
 
         # Extract watersheds
-        upstream_area = calculate_upstream_v2(drainage_direction, new_pour_point_xy)
+        upstream_area = calculate_upstream_v2(
+            drainage_direction, new_pour_point_xy)
         rasterized_array = rasterize_array(upstream_area, tif_profile)
 
         # Save polygon and line as JSON
-        subbasin = raster_to_polygon(rasterized_array, save_polygon=True, 
-                                     polygon_save_path=os.path.join(RESULTS, "watershed", str(row.id) + "_basin"))
+        subbasin = raster_to_polygon(rasterized_array, save_polygon=True,
+                                     polygon_save_path=os.path.join(RESULTS, "watershed", str(row.id) + "_havza"))
 
         # Clip rivers
-        clipped_river_network, feedback = clip_river_network(river_vector, subbasin, 
-                                                            max_strahler_order=MAX_STRAHLER, 
-                                                            line_save_path=os.path.join(RESULTS, "river", str(row.id) + "_river"))
+        clipped_river_network, feedback = clip_river_network(river_vector, subbasin,
+                                                             max_strahler_order=MAX_STRAHLER,
+                                                             line_save_path=os.path.join(RESULTS, "river", str(row.id) + "_akarsu"))
 
+        points_copy["status"] = None
+        points_copy["comment"] = None
         # Insert watershed delineation information into the points table
-        points_copy = insert_watershed_info(points_copy, row, new_pour_point, 
+        points_copy = insert_watershed_info(points_copy, row, new_pour_point,
                                             subbasin["CalculatedArea[km2]"][0], feedback)
 
     return points_copy

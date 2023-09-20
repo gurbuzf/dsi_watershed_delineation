@@ -3,9 +3,10 @@ import geopandas as gpd
 import rasterio
 from rasterio.features import geometry_mask, shapes
 from shapely.geometry import Polygon, box
+import fiona
 import random
 import string
-
+from configuration import VECTOR_EXTENSION
 
 def rasterize_array(array, profile):
     """
@@ -88,20 +89,31 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
 
     # Convert the generated shapes to a GeoDataFrame
     if len(polygons) > 0:
-        coordinates = polygons[0]['coordinates'][0]  # Extract exterior coordinates
-        geom = Polygon(coordinates)
-        gdf = gpd.GeoDataFrame({'geometry': [geom]}, crs=raster_dataset.crs)
-        gdf['geometry'] = gdf['geometry'].to_crs({'proj':'cea'}) 
-        gdf["CalculatedArea[km2]"] = round(gdf.area / 10**6, 2)
-        gdf = gdf.to_crs(epsg=4326)
-        if save_polygon:
-            if polygon_save_path is None:
-                polygon_save_path = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10)) + '.geojson'
-            else:
-                if not polygon_save_path.endswith('.geojson'):
-                    polygon_save_path += '.geojson'
 
-            gdf.to_file(polygon_save_path, driver="GeoJSON")
+        coordinates = polygons[0]['coordinates'][0]  # Extract exterior coordinates
+
+        geom = Polygon(coordinates)
+
+        gdf = gpd.GeoDataFrame({'geometry': [geom]}, crs=raster_dataset.crs)
+
+        gdf['geometry'] = gdf['geometry'].to_crs({'proj':'cea'}) 
+
+        gdf["CalculatedArea[km2]"] = round(gdf.area / 10**6, 2)
+
+        gdf = gdf.to_crs(epsg=4326)
+
+        if save_polygon:
+
+            if polygon_save_path is None:
+                polygon_save_path = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10)) + f'.{VECTOR_EXTENSION}'
+            else:
+                if not polygon_save_path.endswith(f'.{VECTOR_EXTENSION}'):
+                    polygon_save_path += f'.{VECTOR_EXTENSION}'
+            if VECTOR_EXTENSION == "kml":
+                fiona.supported_drivers['KML'] = 'rw'
+                gdf.to_file(polygon_save_path,  driver='KML')
+            elif VECTOR_EXTENSION == "geojson":
+                gdf.to_file(polygon_save_path, driver="GeoJSON")
 
         return gdf
 

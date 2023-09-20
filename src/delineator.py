@@ -5,9 +5,7 @@ from numba import njit
 import pandas as pd
 import geopandas as gpd
 
-import rasterio
 
-import rasterio
 
 def read_drainage_direction(drainage_direction_path):
     """
@@ -173,6 +171,7 @@ def calculate_upstream_v2(drainage_direction, pour_point_coords):
                 # Check if the next pixel drains into the current pixel
 
                 if (drainage_direction[next_r, next_c] - 1) % 8 == (7 + direction - 4) % 8:
+                    
                     # Mark the next pixel as part of the upstream area
                     upstream_area[next_r, next_c] = 1
                     stack.append((next_r, next_c))

@@ -1,7 +1,7 @@
 import rasterio
 import numpy as np
 from src.utils import haversine_distance
-from run_config import VERBOSE, PIXEL2SEARCH
+from configuration import VERBOSE, PIXEL2SEARCH
 
 def read_flow_accumulation_tif(path_flow_acc):
     """

@@ -1,4 +1,0 @@
-id	name	long	lat	area[km2]
-1	point_1	29.46242	39.60424	1000
-4	point_4	29.476	40.058	100
-

@@ -1,6 +1,7 @@
 import os
 import warnings
-from run_config import *
+from configuration import *
+
 
 def check_config_file_validity():
     """
@@ -52,11 +53,13 @@ def check_config_file_validity():
     if VERBOSE not in [True, False]:
         raise ValueError("VERBOSE can only be True, False, 1, or 0. "
                          "Please check the VERBOSE parameter in run_config.py.")
-    
+
     if not os.path.isdir(RESULTS):
-        warnings.warn(f"{RESULTS} directory/folder does not exist! It will be generated!")
+        warnings.warn(
+            f"{RESULTS} directory/folder does not exist! It will be generated!")
 
-
+    if VECTOR_EXTENSION not in ["kml", "geojson"]:
+        raise ValueError('VECTOR_EXTENSION should be kml (default), geojson.')
 
 
 def create_results_directory(path):
@@ -90,4 +93,5 @@ def create_results_directory(path):
     os.makedirs(web_dir, exist_ok=True)
 
     if VERBOSE:
-        print(f"{RESULTS} folder is created! The results will be stored in this folder.")
+        print(
+            f"{RESULTS} folder is created! The results will be stored in this folder.")
