@@ -11,7 +11,7 @@ MODE = 'partial'
 ## name: a unique name for the point. 
 ## long: longitude - lat: latitude
 ## area: upstream area of the pour point if previously known. If not, leave empty. 
-OUTLETS = "../AGI-Havzalar/input/outlets_bursa_secondRUN.csv"
+OUTLETS = "../AGI-Havzalar/input/test.csv"
 
 
 # If single MODE is used, this becomes trivial. This can be set None or empty string "".
@@ -36,4 +36,4 @@ RESULTS = "../AGI-Havzalar/results_bursa/"
 
 MAX_STRAHLER = 1
 
-VECTOR_EXTENSION = "kml"
+VECTOR_EXTENSION = "geojson"

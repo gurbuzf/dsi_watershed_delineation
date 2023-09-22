@@ -8,6 +8,7 @@ import random
 import string
 from configuration import VECTOR_EXTENSION
 
+
 def rasterize_array(array, profile):
     """
     Rasterizes a NumPy array using the profile of a TIFF file.
@@ -31,13 +32,16 @@ def rasterize_array(array, profile):
 
     # Check if the array dimensions match the profile dimensions
     if array.shape != (profile["height"], profile["width"]):
-        raise ValueError("Array dimensions do not match the profile dimensions.")
+        raise ValueError(
+            "Array dimensions do not match the profile dimensions.")
 
     # Convert the array to a supported data type
-    array = array.astype(np.uint8)  # Change the data type here as per your needs
+    # Change the data type here as per your needs
+    array = array.astype(np.uint8)
 
     # Extract the bounds from the transform
-    bounds = rasterio.transform.array_bounds(profile["height"], profile["width"], profile["transform"])
+    bounds = rasterio.transform.array_bounds(
+        profile["height"], profile["width"], profile["transform"])
     extent = box(*bounds)
 
     # Create a new in-memory rasterio Dataset
@@ -56,6 +60,7 @@ def rasterize_array(array, profile):
         raster = memfile.open()
 
     return raster
+
 
 def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None):
     """
@@ -84,19 +89,21 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
     mask = raster_array.astype('uint8')
 
     # Generate polygons from the mask
-    shapes_iter = shapes(mask, transform=raster_dataset.transform, connectivity=8)
+    shapes_iter = shapes(
+        mask, transform=raster_dataset.transform, connectivity=8)
     polygons = [shape for shape, value in shapes_iter if value == 1]
 
     # Convert the generated shapes to a GeoDataFrame
     if len(polygons) > 0:
 
-        coordinates = polygons[0]['coordinates'][0]  # Extract exterior coordinates
+        # Extract exterior coordinates
+        coordinates = polygons[0]['coordinates'][0]
 
         geom = Polygon(coordinates)
 
         gdf = gpd.GeoDataFrame({'geometry': [geom]}, crs=raster_dataset.crs)
 
-        gdf['geometry'] = gdf['geometry'].to_crs({'proj':'cea'}) 
+        gdf['geometry'] = gdf['geometry'].to_crs({'proj': 'cea'})
 
         gdf["CalculatedArea[km2]"] = round(gdf.area / 10**6, 2)
 
@@ -105,13 +112,15 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
         if save_polygon:
 
             if polygon_save_path is None:
-                polygon_save_path = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10)) + f'.{VECTOR_EXTENSION}'
+                polygon_save_path = ''.join(random.choices(
+                    string.ascii_lowercase + string.digits, k=10)) + f'.{VECTOR_EXTENSION}'
             else:
                 if not polygon_save_path.endswith(f'.{VECTOR_EXTENSION}'):
                     polygon_save_path += f'.{VECTOR_EXTENSION}'
             if VECTOR_EXTENSION == "kml":
-                fiona.supported_drivers['KML'] = 'rw'
-                gdf.to_file(polygon_save_path,  driver='KML')
+                # gpd.io.file.fiona.drvsupport.supported_drivers['LIBKML'] = 'rw'
+                fiona.supported_drivers['LIBKML'] = 'rw'
+                gdf.to_file(polygon_save_path,  driver='LIBKML')
             elif VECTOR_EXTENSION == "geojson":
                 gdf.to_file(polygon_save_path, driver="GeoJSON")
 
@@ -119,4 +128,3 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
 
     else:
         raise ValueError("No valid geometry objects found for rasterize.")
-

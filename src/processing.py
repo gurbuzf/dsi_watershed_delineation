@@ -131,8 +131,10 @@ def clip_river_network(
         if feedback["status"] == "success":
 
             if VECTOR_EXTENSION == "kml":
-                fiona.supported_drivers['KML'] = 'rw'
-                clipped_river_network.to_file(line_save_path,  driver='KML')
+                # gpd.io.file.fiona.drvsupport.supported_drivers['LIBKML'] = 'rw'
+
+                fiona.supported_drivers['LIBKML'] = 'rw'
+                clipped_river_network.to_file(line_save_path,  driver='LIBKML')
 
             elif VECTOR_EXTENSION == "geojson":
                 clipped_river_network.to_file(line_save_path, driver="GeoJSON")
