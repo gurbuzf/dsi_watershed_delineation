@@ -1,6 +1,6 @@
 # Watershed Delineation Tool :sweat_drops:
-<h6>Developed for Turkish State Hydraulic Services (DSI) </h6>
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
+Developed for [Turkish State Hydraulic Services (DSI)](https://www.dsi.gov.tr/).
+
 
 ## Description
 
