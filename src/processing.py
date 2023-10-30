@@ -6,7 +6,9 @@ import csv
 from src.snap_pour_point import calculate_new_pour_point
 from src.delineator import calculate_upstream_v2
 from src.polygonize import raster_to_polygon, rasterize_array
+from src.utils import geopandas2KML
 from configuration import OUTLETS,  PIXEL2SEARCH, VECTOR_EXTENSION
+
 
 def read_outlets(path):
     """
@@ -17,10 +19,13 @@ def read_outlets(path):
     Returns:
         None if all column names are in col_headers, an error otherwise.
     """
-    with open(path, "r") as f:
+    with open(path, "rb") as f:
         _first_row = f.readlines(1)
     sniffer = csv.Sniffer()
-    dialect = sniffer.sniff(_first_row[0])
+    try:
+        dialect = sniffer.sniff(_first_row[0].decode("utf-8"))
+    except UnicodeDecodeError:
+        dialect = sniffer.sniff(_first_row[0].decode("windows-1254"))
 
     try:
         points = pd.read_csv(path, encoding="utf-8-sig", sep=dialect.delimiter)
@@ -131,10 +136,8 @@ def clip_river_network(
         if feedback["status"] == "success":
 
             if VECTOR_EXTENSION == "kml":
-                # gpd.io.file.fiona.drvsupport.supported_drivers['LIBKML'] = 'rw'
-
-                fiona.supported_drivers['LIBKML'] = 'rw'
-                clipped_river_network.to_file(line_save_path,  driver='LIBKML')
+                geopandas2KML(clipped_river_network,
+                              line_save_path, vector_type="linestring")
 
             elif VECTOR_EXTENSION == "geojson":
                 clipped_river_network.to_file(line_save_path, driver="GeoJSON")
@@ -217,8 +220,6 @@ def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_d
                                                              max_strahler_order=MAX_STRAHLER,
                                                              line_save_path=os.path.join(RESULTS, "river", str(row.id) + "_akarsu"))
 
-        points_copy["status"] = None
-        points_copy["comment"] = None
         # Insert watershed delineation information into the points table
         points_copy = insert_watershed_info(points_copy, row, new_pour_point,
                                             subbasin["CalculatedArea[km2]"][0], feedback)

@@ -4,6 +4,26 @@ Main script for processing hydrological data and delineating watersheds.
 
 # Add the parent directory of the current script to the system path
 # to enable importing modules from that directory or its subdirectories.
+from configuration import OUTLETS, WATERSHEDS, MODE, FLOW_ACCUMULATION, DRAINAGE_DIRECTION, PIXEL2SEARCH, RIVERS, RESULTS, MAX_STRAHLER, VERBOSE
+from src.file_manager import check_config_file_validity, \
+    create_results_directory
+from src.polygonize import raster_to_polygon, \
+    rasterize_array
+from src.delineator import read_drainage_direction, \
+    calculate_upstream_v2
+from src.snap_pour_point import read_flow_accumulation_tif, \
+    calculate_new_pour_point
+from src.processing import read_outlets, \
+    join_watersheds2points, \
+    load_river_network, \
+    clip_river_network, \
+    insert_watershed_info, \
+    process_watershed_points
+import geopandas as gpd
+import pandas as pd
+import rasterio
+import numpy as np
+from datetime import datetime
 import os
 import sys
 
@@ -13,30 +33,8 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 # Import necessary modules and functions
-from datetime import datetime
-import numpy as np
-import rasterio
-import pandas as pd
-import geopandas as gpd
 
-from src.processing import read_outlets, \
-    join_watersheds2points, \
-    load_river_network, \
-    clip_river_network, \
-    insert_watershed_info, \
-    process_watershed_points
-from src.snap_pour_point import read_flow_accumulation_tif, \
-    calculate_new_pour_point
-from src.delineator import read_drainage_direction, \
-    calculate_upstream_v2
-from src.polygonize import raster_to_polygon, \
-    rasterize_array
-from src.file_manager import check_config_file_validity, \
-    create_results_directory
 # Add other necessary imports
-
-from configuration import OUTLETS, WATERSHEDS, MODE, FLOW_ACCUMULATION, DRAINAGE_DIRECTION, PIXEL2SEARCH, RIVERS, RESULTS, MAX_STRAHLER, VERBOSE
-
 
 
 def main():
@@ -48,6 +46,8 @@ def main():
     create_results_directory(RESULTS)
 
     points = read_outlets(OUTLETS)
+    # points["status"] = None
+    # points["comment"] = None
 
     if MODE == "single":
 

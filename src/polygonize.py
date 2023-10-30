@@ -7,6 +7,7 @@ import fiona
 import random
 import string
 from configuration import VECTOR_EXTENSION
+from src.utils import geopandas2KML
 
 
 def rasterize_array(array, profile):
@@ -118,9 +119,8 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
                 if not polygon_save_path.endswith(f'.{VECTOR_EXTENSION}'):
                     polygon_save_path += f'.{VECTOR_EXTENSION}'
             if VECTOR_EXTENSION == "kml":
-                # gpd.io.file.fiona.drvsupport.supported_drivers['LIBKML'] = 'rw'
-                fiona.supported_drivers['LIBKML'] = 'rw'
-                gdf.to_file(polygon_save_path,  driver='LIBKML')
+                geopandas2KML(gdf, polygon_save_path, vector_type="polygon")
+
             elif VECTOR_EXTENSION == "geojson":
                 gdf.to_file(polygon_save_path, driver="GeoJSON")
 
