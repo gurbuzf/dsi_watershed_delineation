@@ -3,6 +3,7 @@ import numpy as np
 from src.utils import haversine_distance
 from configuration import VERBOSE, PIXEL2SEARCH
 
+
 def read_flow_accumulation_tif(path_flow_acc):
     """
     Reads flow accumulation data from a TIFF file and returns the data object and pixel size.
@@ -20,7 +21,8 @@ def read_flow_accumulation_tif(path_flow_acc):
     try:
         data = rasterio.open(path_flow_acc)
     except FileNotFoundError:
-        print(f'{path_flow_acc} is not found!\nPlease check the file path for the flow accumulation data.')
+        print(
+            f'{path_flow_acc} is not found!\nPlease check the file path for the flow accumulation data.')
 
     # Get the number of rows and columns in the data and the coordinate reference system (CRS).
     rows, cols = data.shape
@@ -37,7 +39,7 @@ def read_flow_accumulation_tif(path_flow_acc):
               f"# of pixel in (row, col): ({rows}, {cols})\n"
               f"CRS: {crs}")
 
-    return data, (pixelSizeX, pixelSizeY)
+    return data
 
 
 def resample_matrix(central_coord, n):
@@ -53,11 +55,13 @@ def resample_matrix(central_coord, n):
         list: The generated matrix of coordinates.
     """
     x, y = central_coord
-    matrix_row_col = [[x+i, y+j] for j in range(-n, n+1) for i in range(-n, n+1)]
+    matrix_row_col = [[x+i, y+j]
+                      for j in range(-n, n+1) for i in range(-n, n+1)]
     matrix_row_col = np.array(matrix_row_col)
     rows = matrix_row_col[:, 0]
     cols = matrix_row_col[:, 1]
     return rows, cols
+
 
 def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=PIXEL2SEARCH):
     """
@@ -105,11 +109,13 @@ def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=PIXEL2SEARCH):
         # Calculate the difference between the original coordinate and the snapped point in degrees
         dx = abs(coord[0] - x)
         dy = abs(coord[1] - y)
-        snap_difference = (dx**2 + dy**2)**0.5 
-        print(f"Snapped Point distance to original location (in degrees): {snap_difference}")
-        
+        snap_difference = (dx**2 + dy**2)**0.5
+        print(
+            f"Snapped Point distance to original location (in degrees): {snap_difference}")
+
         # Calculate the distance between the snapped point and the original location in meters
         distance = haversine_distance(coord[1], coord[0], y, x)
-        print(f"Snapped Point distance to original location (in meters): {distance}")
+        print(
+            f"Snapped Point distance to original location (in meters): {distance}")
 
     return snapped_pour_point_xy

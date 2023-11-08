@@ -175,7 +175,7 @@ def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
     return points_copy
 
 
-def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_dir_src,
+def process_watershed_points(points, accum, drainage_direction, dr_dir_src,
                              tif_profile, river_vector, MAX_STRAHLER, RESULTS):
     """
     Process watershed points and update points_copy with watershed information.
@@ -183,7 +183,6 @@ def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_d
     Args:
         points (pandas.DataFrame): DataFrame containing points information.
         accum: (numpy.ndarray): Array containing flow accumulation data.
-        pixel_size (tuple): The size of the pixel in X and Y direction.
         drainage_direction (numpy.ndarray): Array containing drainage direction data.
         dr_dir_src (rasterio.io.DatasetReader): ....
         tif_profile (rasterio.profiles.Profile): Profile of the TIFF file.
@@ -196,6 +195,11 @@ def process_watershed_points(points, accum, pixel_size, drainage_direction, dr_d
 
     """
     points_copy = points.copy()
+    # Extract the geotransform information and pixel sizes from the data.
+    gt = dr_dir_src.transform
+    pixelSizeX = gt[0]
+    pixelSizeY = gt[4]
+    pixel_size = (pixelSizeX, pixelSizeY)
 
     for index, row in points.iterrows():
         print(f"[+] Processing {row.id}.")

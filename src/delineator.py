@@ -4,7 +4,7 @@ import rasterio
 from numba import njit
 import pandas as pd
 import geopandas as gpd
-
+from configuration import VERBOSE
 
 
 def read_drainage_direction(drainage_direction_path):
@@ -34,23 +34,49 @@ def read_drainage_direction(drainage_direction_path):
 
         # Perform further operations with the drainage_direction data, tiff_profile, or the dr_dir_source object
 
+    Args:
+        drainage_direction_path (str): File path of the drainage direction TIFF.
+
+    Returns:
+        tuple: A tuple containing the drainage direction data as a NumPy array, the TIFF profile, and the rasterio dataset object.
+
+    Raises:
+        FileNotFoundError: If the TIFF file is not found or cannot be opened.
+        ValueError: If the TIFF file does not contain the expected drainage direction data.
     """
     try:
         with rasterio.open(drainage_direction_path) as src:
             # Check if the dataset has exactly one band
             if src.count != 1:
-                raise ValueError("The TIFF file should have exactly one band containing the drainage direction data.")
-            
+                raise ValueError(
+                    "The TIFF file should have exactly one band containing the drainage direction data.")
+
             drainage_direction = src.read(1)
 
             tiff_profile = src.profile
+
+            # Get the number of rows and columns in the data and the coordinate reference system (CRS).
+            rows, cols = src.shape
+            crs = src.crs
+
+            # Extract the geotransform information and pixel sizes from the data.
+            gt = src.transform
+            pixelSizeX = gt[0]
+            pixelSizeY = gt[4]
+            (pixelSizeX, pixelSizeY)
+            # Verbose mode: Print the flow accumulation data description.
+            if VERBOSE:
+                print(f"Drainage Direction Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
+                      f"# of pixel in (row, col): ({rows}, {cols})\n"
+                      f"CRS: {crs}")
             return drainage_direction, tiff_profile, src
+
     except FileNotFoundError:
-        raise FileNotFoundError(f"The file '{drainage_direction_path}' is not found or cannot be opened.")
+        raise FileNotFoundError(
+            f"The file '{drainage_direction_path}' is not found or cannot be opened.")
     except rasterio.RasterioIOError:
-        raise ValueError(f"The file '{drainage_direction_path}' does not contain the expected drainage direction data.")
-
-
+        raise ValueError(
+            f"The file '{drainage_direction_path}' does not contain the expected drainage direction data.")
 
 
 def calculate_upstream_v1(drainage_direction, pour_point_coords):
@@ -82,7 +108,8 @@ def calculate_upstream_v1(drainage_direction, pour_point_coords):
     row, col = pour_point_coords
 
     # Define the D8 offsets for the eight directions
-    offsets = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)]
+    offsets = [(0, 1), (-1, 1), (-1, 0), (-1, -1),
+               (0, -1), (1, -1), (1, 0), (1, 1)]
 
     # Recursive function to calculate upstream area
     def traverse_upstream(r, c):
@@ -117,6 +144,7 @@ def calculate_upstream_v1(drainage_direction, pour_point_coords):
 
     return upstream_area.astype(int)
 
+
 @njit
 def calculate_upstream_v2(drainage_direction, pour_point_coords):
     """
@@ -148,7 +176,8 @@ def calculate_upstream_v2(drainage_direction, pour_point_coords):
     row, col = pour_point_coords
 
     # Define the D8 offsets for the eight directions
-    offsets = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)]
+    offsets = [(0, 1), (-1, 1), (-1, 0), (-1, -1),
+               (0, -1), (1, -1), (1, 0), (1, 1)]
 
     # Create a stack to store the pixel coordinates
     stack = [(row, col)]
@@ -171,7 +200,7 @@ def calculate_upstream_v2(drainage_direction, pour_point_coords):
                 # Check if the next pixel drains into the current pixel
 
                 if (drainage_direction[next_r, next_c] - 1) % 8 == (7 + direction - 4) % 8:
-                    
+
                     # Mark the next pixel as part of the upstream area
                     upstream_area[next_r, next_c] = 1
                     stack.append((next_r, next_c))

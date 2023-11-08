@@ -14,6 +14,10 @@ data/raster/flow_accumulation/TR02.tif
 results_bursa
 results
 src/__pycache__/
+
+#VS code settings
+.vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
