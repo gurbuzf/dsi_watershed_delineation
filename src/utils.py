@@ -71,6 +71,7 @@ def geopandas2KML(gdf, kml_save_path, vector_type):
     kml.save(kml_save_path)
 
 
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     # Earth radius in meters
     earth_radius = 6371000

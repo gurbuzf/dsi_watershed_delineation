@@ -1,21 +1,26 @@
 import rasterio
 import numpy as np
 from src.utils import haversine_distance
-from configuration import VERBOSE, PIXEL2SEARCH
 
 
-def read_flow_accumulation_tif(path_flow_acc):
+
+
+def read_flow_accumulation_tif(path_flow_acc, verbose=False):
     """
     Reads flow accumulation data from a TIFF file and returns the data object and pixel size.
 
     Args:
         path_flow_acc (str): The file path for the flow accumulation data.
+        verbose (bool, optional): If True, print information about the reading process. Defaults to False.
 
     Returns:
         tuple: A tuple containing the data object and pixel size (pixelSizeX, pixelSizeY).
+
+    Raises:
+        FileNotFoundError: If the specified file path for flow accumulation data is not found.
     """
-    # Verbose mode: Print the information about reading flow accumulation data.
-    if VERBOSE:
+    # Verbose mode: Print information about reading flow accumulation data.
+    if verbose:
         print(f"[+] Reading flow accumulation data at {path_flow_acc}...")
 
     try:
@@ -23,23 +28,25 @@ def read_flow_accumulation_tif(path_flow_acc):
     except FileNotFoundError:
         print(
             f'{path_flow_acc} is not found!\nPlease check the file path for the flow accumulation data.')
+        raise  # Re-raise the FileNotFoundError for clarity
 
     # Get the number of rows and columns in the data and the coordinate reference system (CRS).
     rows, cols = data.shape
     crs = data.crs
 
-    # Extract the geotransform information and pixel sizes from the data.
+    # Extract geotransform information and pixel sizes from the data.
     gt = data.transform
     pixelSizeX = gt[0]
     pixelSizeY = gt[4]
 
-    # Verbose mode: Print the flow accumulation data description.
-    if VERBOSE:
+    # Verbose mode: Print flow accumulation data description.
+    if verbose:
         print(f"Flow Accumulation Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
-              f"# of pixel in (row, col): ({rows}, {cols})\n"
+              f"# of pixels in (row, col): ({rows}, {cols})\n"
               f"CRS: {crs}")
 
     return data
+
 
 
 def resample_matrix(central_coord, n):
@@ -63,7 +70,7 @@ def resample_matrix(central_coord, n):
     return rows, cols
 
 
-def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=PIXEL2SEARCH):
+def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=1, verbose=False):
     """
     Processes flow accumulation data to identify the new coordinates of the pixel neighboring the 
     point located at coord. Returns the coordinate of the pixel  with the highest flow accumulation.  
@@ -105,7 +112,7 @@ def calculate_new_pour_point(data, pixel_size, coord, n_neighbour=PIXEL2SEARCH):
     # Create a tuple with the snapped pour point coordinates
     snapped_pour_point_xy = (x, y)
 
-    if VERBOSE:
+    if verbose:
         # Calculate the difference between the original coordinate and the snapped point in degrees
         dx = abs(coord[0] - x)
         dy = abs(coord[1] - y)

@@ -1,18 +1,15 @@
-
 import numpy as np
 import rasterio
 from numba import njit
-import pandas as pd
-import geopandas as gpd
-from configuration import VERBOSE
 
 
-def read_drainage_direction(drainage_direction_path):
+def read_drainage_direction(drainage_direction_path, verbose=False):
     """
     Read drainage direction data from a TIFF file.
 
     Args:
         drainage_direction_path (str): File path of the drainage direction TIFF.
+        verbose (bool, optional): If True, print information about the reading process. Defaults to False.
 
     Returns:
         tuple: A tuple containing the drainage direction data as a NumPy array, the TIFF profile, and the rasterio dataset object.
@@ -33,16 +30,6 @@ def read_drainage_direction(drainage_direction_path):
         drainage_direction, tiff_profile, dr_dir_source = read_drainage_direction(drainage_direction_path)
 
         # Perform further operations with the drainage_direction data, tiff_profile, or the dr_dir_source object
-
-    Args:
-        drainage_direction_path (str): File path of the drainage direction TIFF.
-
-    Returns:
-        tuple: A tuple containing the drainage direction data as a NumPy array, the TIFF profile, and the rasterio dataset object.
-
-    Raises:
-        FileNotFoundError: If the TIFF file is not found or cannot be opened.
-        ValueError: If the TIFF file does not contain the expected drainage direction data.
     """
     try:
         with rasterio.open(drainage_direction_path) as src:
@@ -63,12 +50,13 @@ def read_drainage_direction(drainage_direction_path):
             gt = src.transform
             pixelSizeX = gt[0]
             pixelSizeY = gt[4]
-            (pixelSizeX, pixelSizeY)
-            # Verbose mode: Print the flow accumulation data description.
-            if VERBOSE:
+
+            # Verbose mode: Print the drainage direction data description.
+            if verbose:
                 print(f"Drainage Direction Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
-                      f"# of pixel in (row, col): ({rows}, {cols})\n"
+                      f"# of pixels in (row, col): ({rows}, {cols})\n"
                       f"CRS: {crs}")
+
             return drainage_direction, tiff_profile, src
 
     except FileNotFoundError:
@@ -77,6 +65,130 @@ def read_drainage_direction(drainage_direction_path):
     except rasterio.RasterioIOError:
         raise ValueError(
             f"The file '{drainage_direction_path}' does not contain the expected drainage direction data.")
+
+
+
+@njit
+def calculate_upstream_arcgis(drainage_direction, pour_point_coords):
+    """
+    Calculate the upstream area based on the given ArcGIS-style drainage direction and pour point coordinates.
+
+    Parameters:
+    - drainage_direction: numpy.ndarray
+        A 2D array representing the drainage direction. Each pixel indicates the direction in which water flows.
+    - pour_point_coords: tuple (row, column)
+        The row and column indices of the pour point, which is the starting point for calculating the upstream area.
+
+    Returns:
+    - upstream_area: numpy.ndarray
+        A binary array indicating the pixels that belong to the upstream area (1 for upstream, 0 for other pixels).
+
+    The function uses a stack-based iterative algorithm to traverse upstream from the pour point, following the
+    drainage direction. It marks the pixels that contribute flow to the pour point as part of the upstream area.
+
+    Note:
+    - The drainage direction values should follow the ArcGIS convention of powers of 2 representing the eight directions.
+    - The pour point coordinates should be within the boundaries of the drainage direction array.
+    - The function utilizes the `numba` library's `njit` decorator for improved performance.
+    """
+    # Create an empty array with the same shape as the drainage direction
+    upstream_area = np.zeros_like(drainage_direction, dtype=np.int8)
+
+    # Get the row and column indices of the pour point
+    row, col = pour_point_coords
+
+    # Define the D8 offsets for the eight directions
+    offsets = [(0, 1), (1, 1), (1, 0), (1, -1),
+               (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+
+    # Create a stack to store the pixel coordinates
+    stack = [(row, col)]
+
+    # Mark the pour point as part of the upstream area
+    upstream_area[row, col] = 1
+
+    # Iterate until the stack is empty
+    while stack:
+        r, c = stack.pop()
+
+        # Iterate over the eight directions
+        for direction in range(8):
+            offset = offsets[direction]
+            next_r = r + offset[0]
+            next_c = c + offset[1]
+
+            # Check if the next pixel is within the array boundaries
+            if 0 <= next_r < drainage_direction.shape[0] and 0 <= next_c < drainage_direction.shape[1]:
+                # Check if the next pixel drains into the current pixel
+                if drainage_direction[next_r, next_c] == (2 ** ((direction + 4) % 8)):
+                    # Mark the next pixel as part of the upstream area
+                    upstream_area[next_r, next_c] = 1
+                    stack.append((next_r, next_c))
+
+    return upstream_area
+
+
+@njit
+def calculate_upstream_grass(drainage_direction, pour_point_coords):
+    """
+    Calculate the upstream area based on GRASS GIS-style drainage direction and pour point coordinates.
+
+    Parameters:
+    - drainage_direction : numpy.ndarray
+        2D array representing drainage direction. Each pixel indicates water flow direction.
+    - pour_point_coords : tuple (row, column)
+        Row and column indices of the pour point, the starting point for calculating the upstream area.
+
+    Returns:
+    - upstream_area : numpy.ndarray
+        Binary array indicating pixels belonging to the upstream area (1 for upstream, 0 for others).
+
+    The function uses a stack-based iterative algorithm to traverse upstream from the pour point, following the
+    drainage direction. It marks pixels that contribute flow to the pour point as part of the upstream area.
+
+    Note:
+    - Drainage direction values follow the GRASS GIS convention (values 1 to 8 representing the eight directions).
+    - Pour point coordinates should be within the drainage direction array boundaries.
+    - The function utilizes the `numba` library's `njit` decorator for improved performance.
+    """
+
+    # Create an empty array with the same shape as the drainage direction
+    upstream_area = np.zeros_like(drainage_direction, dtype=np.int8)
+
+    # Get the row and column indices of the pour point
+    row, col = pour_point_coords
+
+    # Define the GRASS D8 offsets for the eight directions
+    offsets = [(-1, 1), (-1, 0), (-1, -1), (0, -1),
+               (1, -1), (1, 0), (1, 1), (0, 1)]
+
+    # Create a stack to store the pixel coordinates
+    stack = [(row, col)]
+
+    # Mark the pour point as part of the upstream area
+    upstream_area[row, col] = 1
+
+    # Iterate until the stack is empty
+    while stack:
+        r, c = stack.pop(-1)
+
+        # Iterate over the eight directions
+        for direction in range(8):
+            offset = offsets[direction]
+            next_r = r + offset[0]
+            next_c = c + offset[1]
+
+            # Check if the next pixel is within the array boundaries
+            if 0 <= next_r < drainage_direction.shape[0] and 0 <= next_c < drainage_direction.shape[1]:
+                # Check if the next pixel drains into the current pixel
+                adjusted_direction = 8 if (
+                    direction + 5) % 8 == 0 else (direction + 5) % 8
+                if drainage_direction[next_r, next_c] == adjusted_direction:
+                    # Mark the next pixel as part of the upstream area
+                    upstream_area[next_r, next_c] = 1
+                    stack.append((next_r, next_c))
+
+    return upstream_area
 
 
 def calculate_upstream_v1(drainage_direction, pour_point_coords):

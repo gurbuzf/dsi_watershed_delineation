@@ -1,16 +1,17 @@
-import os
+import os 
 import warnings
-from configuration import *
+import configparser
 
-
-def check_config_file_validity():
+def check_config_file_validity(config_file_path):
     """
-    Checks the validity of the configuration file for running a specific mode.
+    Validate the configuration file for the selected mode.
 
-    This function validates the configuration file based on the selected mode and parameter values. It raises
-    ValueErrors if the configuration is invalid, such as incorrect file/folder paths or unsupported parameter values.
-    Additionally, it raises a UserWarning if the value of PIXEL2SEARCH is set higher than 6, which may lead to
-    unexpected results.
+    This function checks the validity of the configuration file, raising ValueErrors for invalid configurations,
+    such as incorrect file/folder paths or unsupported parameter values. Additionally, it raises a UserWarning if the
+    value of PIXEL2SEARCH is set higher than 6, which may lead to unexpected results.
+
+    Args:
+        config_file_path (str): Path to the configuration file.
 
     Raises:
         ValueError: If the configuration file is invalid for the selected mode.
@@ -22,29 +23,56 @@ def check_config_file_validity():
         UserWarning: If the RESULTS directory does not exist, it will be generated.
 
     """
+    print(f">>>>>>>{config_file_path}<<<<<<<<<<<<<<<<")
+    config = read_config(config_file_path)
+
+    MODE = config.get('MODE')
+    OUTLETS = config.get('OUTLETS')
+    WATERSHEDS = config.get('WATERSHEDS')
+    RIVERS = config.get('RIVERS')
+    FLOW_ACCUMULATION = config.get('DRAINAGE_DIRECTION')
+    DRAINAGE_DIRECTION = config.get('DRAINAGE_DIRECTION')
+    DRAINAGE_DIRECTION_TYPE = config.get('DRAINAGE_DIRECTION_TYPE')
+    VERBOSE = bool(eval(config.get('VERBOSE')))
+    PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))
+    RESULTS = config.get('RESULTS')
+    MIN_STRAHLER = int(config.get('MIN_STRAHLER'))
+    VECTOR_EXTENSION = config.get('VECTOR_EXTENSION')
+
     if MODE == "single":
         if not os.path.isfile(RIVERS):
+            print(os.path.join(os.getcwd(), RIVERS))
+            print(os.path.isfile(os.path.join(os.getcwd(), RIVERS)))
             raise ValueError("In Single Mode, Rivers Vector Path must be a file not a folder. "
                              f"Please check RIVERS = {RIVERS}")
+
         if not os.path.isfile(FLOW_ACCUMULATION):
             raise ValueError("In Single Mode, Flow Accumulation Path must be a file not a folder. "
                              f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
+
         if not os.path.isfile(DRAINAGE_DIRECTION):
             raise ValueError("In Single Mode, Drainage Direction Path must be a file not a folder. "
                              f"Please check DRAINAGE_DIRECTION = {DRAINAGE_DIRECTION}")
+
     elif MODE == "partial":
         if not os.path.isdir(RIVERS):
             raise ValueError("In Partial Mode, Rivers Vector Path must be a folder not a file. "
                              f"Please check RIVERS = {RIVERS}")
+
         if not os.path.isdir(FLOW_ACCUMULATION):
             raise ValueError("In Partial Mode, Flow Accumulation Path must be a folder not a file. "
                              f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
+
         if not os.path.isdir(DRAINAGE_DIRECTION):
             raise ValueError("In Partial Mode, Drainage Direction Path must be a folder not a file. "
                              f"Please check DRAINAGE_DIRECTION = {DRAINAGE_DIRECTION}")
     else:
         raise ValueError("MODE can only be either 'single' or 'partial'! "
-                         "Please check the run_config.py file and arrange the MODE parameter accordingly.")
+                         "Please check the configuration.py file and arrange the MODE parameter accordingly.")
+
+    if DRAINAGE_DIRECTION_TYPE not in ["arcgis", "grass"]:
+        raise ValueError("DRAINAGE_DIRECTION_TYPE can only be 'arcgis' or 'grass'."
+                         "Please check the DRAINAGE_DIRECTION_TYPE parameter in configuration.py.")
 
     if PIXEL2SEARCH >= 6:
         warnings.warn(f"PIXEL2SEARCH is set to {PIXEL2SEARCH}! This value seems high. "
@@ -52,7 +80,7 @@ def check_config_file_validity():
 
     if VERBOSE not in [True, False]:
         raise ValueError("VERBOSE can only be True, False, 1, or 0. "
-                         "Please check the VERBOSE parameter in run_config.py.")
+                         "Please check the VERBOSE parameter in configuration.py.")
 
     if not os.path.isdir(RESULTS):
         warnings.warn(
@@ -62,7 +90,8 @@ def check_config_file_validity():
         raise ValueError('VECTOR_EXTENSION should be kml (default), geojson.')
 
 
-def create_results_directory(path):
+
+def create_results_directory(path, verbose=False):
     """
     Check if the given path is a directory and create necessary subdirectories.
 
@@ -86,12 +115,25 @@ def create_results_directory(path):
 
     watershed_dir = os.path.join(path, "watershed")
     river_dir = os.path.join(path, "river")
-    web_dir = os.path.join(path, "web")
+    # web_dir = os.path.join(path, "web")
 
     os.makedirs(watershed_dir, exist_ok=True)
     os.makedirs(river_dir, exist_ok=True)
-    os.makedirs(web_dir, exist_ok=True)
+    # os.makedirs(web_dir, exist_ok=True)
 
-    if VERBOSE:
-        print(
-            f"{RESULTS} folder is created! The results will be stored in this folder.")
+    if verbose:
+        print(f"{path} folder is created! The results will be stored in this folder.")
+        
+
+def read_config(config_file_path):
+    if not os.path.exists(config_file_path):
+        raise FileNotFoundError(f"Config file not found: {config_file_path}")
+
+    config = configparser.ConfigParser()
+    config.read(config_file_path)
+
+    if 'Settings' not in config:
+        raise ValueError("Settings section not found in the config file.")
+
+    return config['Settings']
+

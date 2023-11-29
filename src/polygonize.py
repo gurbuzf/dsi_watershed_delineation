@@ -1,12 +1,10 @@
+import random
+import string
 import numpy as np
 import geopandas as gpd
 import rasterio
 from rasterio.features import geometry_mask, shapes
 from shapely.geometry import Polygon, box
-import fiona
-import random
-import string
-from configuration import VECTOR_EXTENSION
 from src.utils import geopandas2KML
 
 
@@ -63,7 +61,7 @@ def rasterize_array(array, profile):
     return raster
 
 
-def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None):
+def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None, file_extension=None):
     """
     Convert a raster with binary values to a polygon.
 
@@ -71,6 +69,7 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
         raster_dataset (rasterio.DatasetReader): Rasterio dataset reader object.
         save_polygon (bool, optional): Flag indicating whether to save the polygon as a GeoJSON file. Defaults to True.
         polygon_save_path (str, optional): Path to save the GeoJSON file. If None, a random filename will be generated. Defaults to None.
+        file_extension (str, optional): File extension for saving the polygon file (e.g., 'geojson', 'kml'). Defaults to None.
 
     Returns:
         gpd.GeoDataFrame: GeoDataFrame containing the polygon geometry.
@@ -90,13 +89,11 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
     mask = raster_array.astype('uint8')
 
     # Generate polygons from the mask
-    shapes_iter = shapes(
-        mask, transform=raster_dataset.transform, connectivity=8)
+    shapes_iter = shapes(mask, transform=raster_dataset.transform, connectivity=8)
     polygons = [shape for shape, value in shapes_iter if value == 1]
 
     # Convert the generated shapes to a GeoDataFrame
     if len(polygons) > 0:
-
         # Extract exterior coordinates
         coordinates = polygons[0]['coordinates'][0]
 
@@ -104,27 +101,31 @@ def raster_to_polygon(raster_dataset, save_polygon=True, polygon_save_path=None)
 
         gdf = gpd.GeoDataFrame({'geometry': [geom]}, crs=raster_dataset.crs)
 
+        # Convert the geometry to a Cylindrical Equal Area (cea) projection
         gdf['geometry'] = gdf['geometry'].to_crs({'proj': 'cea'})
 
+        # Calculate and round the area in square kilometers
         gdf["CalculatedArea[km2]"] = round(gdf.area / 10**6, 2)
 
+        # Convert the geometry back to the default EPSG:4326 projection
         gdf = gdf.to_crs(epsg=4326)
 
         if save_polygon:
-
             if polygon_save_path is None:
+                # Generate a random filename if not provided
                 polygon_save_path = ''.join(random.choices(
-                    string.ascii_lowercase + string.digits, k=10)) + f'.{VECTOR_EXTENSION}'
+                    string.ascii_lowercase + string.digits, k=10)) + f'.{file_extension}'
             else:
-                if not polygon_save_path.endswith(f'.{VECTOR_EXTENSION}'):
-                    polygon_save_path += f'.{VECTOR_EXTENSION}'
-            if VECTOR_EXTENSION == "kml":
-                geopandas2KML(gdf, polygon_save_path, vector_type="polygon")
+                # Ensure the provided path has the correct file extension
+                if not polygon_save_path.endswith(f'.{file_extension}'):
+                    polygon_save_path += f'.{file_extension}'
 
-            elif VECTOR_EXTENSION == "geojson":
+            # Save the GeoDataFrame to the specified file format
+            if file_extension == "kml":
+                geopandas2KML(gdf, polygon_save_path, vector_type="polygon")
+            elif file_extension == "geojson":
                 gdf.to_file(polygon_save_path, driver="GeoJSON")
 
         return gdf
-
     else:
         raise ValueError("No valid geometry objects found for rasterize.")
