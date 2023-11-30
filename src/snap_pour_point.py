@@ -3,8 +3,6 @@ import numpy as np
 from src.utils import haversine_distance
 
 
-
-
 def read_flow_accumulation_tif(path_flow_acc, verbose=False):
     """
     Reads flow accumulation data from a TIFF file and returns the data object and pixel size.
@@ -46,7 +44,6 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
               f"CRS: {crs}")
 
     return data
-
 
 
 def resample_matrix(central_coord, n):

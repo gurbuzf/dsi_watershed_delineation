@@ -9,12 +9,14 @@ This tool facilitates the batch processing of pour points, allowing for the on-d
 This Python package has been specifically designed and tested for delineating watersheds in Turkiye. However, with the provision of the necessary data, it can also be utilized for other locations worldwide.
 
 ## Data
-- Hydrologicaly conditioned MERIT DEM with approximately 90 meter pixel resolution.
+
+To be updated!
+<!-- - Hydrologicaly conditioned MERIT DEM with approximately 90 meter pixel resolution.
     - 8 digit drainage/flow direction data calculated by QGIS Grass.
     - Flow Accumulation Data calculated by QGIS Grass.
 - Vector data produced by GD of Turkish Water Management. 
      - Shapefile of the 25 watershed boundaries in EPSG4326 projection.
-     - Shapefile of Countrywide River Network in EPSG4326 projection.
+     - Shapefile of Countrywide River Network in EPSG4326 projection. -->
 
 ## Features
 
@@ -31,7 +33,7 @@ conda install --file requirements.txt
 ```
 4. Modify the cofiguration.py and run the script:
 ```sh
-python main.py config_file=configuration.py
+python run.py --config_path=configuration.ini
 ```
 
 ## Acknowledgemet
