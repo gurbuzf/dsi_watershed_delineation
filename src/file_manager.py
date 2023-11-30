@@ -23,20 +23,19 @@ def check_config_file_validity(config_file_path):
         UserWarning: If the RESULTS directory does not exist, it will be generated.
 
     """
-    print(f">>>>>>>{config_file_path}<<<<<<<<<<<<<<<<")
+    
     config = read_config(config_file_path)
-
     MODE = config.get('MODE')
     OUTLETS = config.get('OUTLETS')
     WATERSHEDS = config.get('WATERSHEDS')
     RIVERS = config.get('RIVERS')
-    FLOW_ACCUMULATION = config.get('DRAINAGE_DIRECTION')
+    FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
     DRAINAGE_DIRECTION = config.get('DRAINAGE_DIRECTION')
     DRAINAGE_DIRECTION_TYPE = config.get('DRAINAGE_DIRECTION_TYPE')
-    VERBOSE = bool(eval(config.get('VERBOSE')))
+    VERBOSE = eval(config.get('VERBOSE'))
     PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))
     RESULTS = config.get('RESULTS')
-    MIN_STRAHLER = int(config.get('MIN_STRAHLER'))
+    MIN_STRAHLER = eval(config.get('MIN_STRAHLER'))
     VECTOR_EXTENSION = config.get('VECTOR_EXTENSION')
 
     if MODE == "single":

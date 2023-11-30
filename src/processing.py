@@ -1,5 +1,6 @@
 import os
 import csv
+import warnings
 
 import pandas as pd
 import geopandas as gpd
@@ -7,7 +8,7 @@ import numpy as np
 import rasterio
 
 from src.snap_pour_point import calculate_new_pour_point
-from src.delineator import calculate_upstream_arcgis, calculate_upstream_grass 
+from src.delineator import calculate_upstream_arcgis, calculate_upstream_grass
 from src.polygonize import raster_to_polygon, rasterize_array
 from src.utils import geopandas2KML
 
@@ -94,7 +95,7 @@ def load_river_network(path2rivernetwork):
         - The path2rivernetwork should point to the directory containing the river network data file.
     """
     if path2rivernetwork in ['', None, False]:
-        return  None
+        return None
     else:
         # Load the river network data as a GeoDataFrame
         river_vector = gpd.read_file(path2rivernetwork)
@@ -102,54 +103,49 @@ def load_river_network(path2rivernetwork):
         return river_vector
 
 
-def clip_river_network(
-        river_network: gpd.GeoDataFrame,
-        subbasin_polygon: gpd.GeoDataFrame,
-        min_strahler_order: int,
-        line_save_path: str = None,
-        file_extension: str = None):
+def clip_river_network(river_network, subbasin_polygon, min_strahler_order, line_save_path=None, file_extension=None):
     """
-    Clips a river network GeoDataFrame using a subbasin polygon and optionally saves the clipped river network as a new GeoJSON file.
+    Clips a GeoDataFrame representing a river network using a subbasin polygon and optionally saves the clipped river network as a new GeoJSON or KML file.
 
     Args:
-        river_network (geopandas.GeoDataFrame): Input river network GeoDataFrame.
-        subbasin_polygon (geopandas.GeoDataFrame): Subbasin polygon GeoDataFrame.
-        min_strahler_order (int): Minimum Strahler order for filtering.
-        line_save_path (str, optional): Path to the output clipped river network GeoJSON file. Defaults to None.
-        file_extension (str, optional): File extension for saving the clipped river network file (e.g., 'geojson', 'kml'). Defaults to None.
+        river_network (geopandas.GeoDataFrame): Input GeoDataFrame representing the river network.
+        subbasin_polygon (geopandas.GeoDataFrame): GeoDataFrame representing the subbasin polygon.
+        min_strahler_order (int): Minimum Strahler order for filtering the river network.
+        line_save_path (str, optional): Path to save the clipped river network file. Defaults to None.
+        file_extension (str, optional): File extension for saving the clipped river network file ('geojson', 'kml'). Defaults to None.
 
     Returns:
-        tuple: A tuple containing the clipped river network GeoDataFrame and feedback dictionary.
+        tuple: A tuple containing the clipped GeoDataFrame representing the river network and a feedback dictionary.
 
-    Raises:
-        KeyError: If the 'strahler' column is not found in the river network attribute table.
+    Warns:
+        UserWarning: If the 'strahler' column is not found in the river network attribute table, a warning is issued, and MIN_STRAHLER cannot be applied.
 
     Notes:
-        - The function clips the river network to the provided subbasin polygon and filters by the maximum Strahler order.
-        - Optionally, the clipped river network can be saved as a GeoJSON or KML file.
+        - The function clips the river network to the provided subbasin polygon and filters by the minimum Strahler order.
+        - The clipped river network can be optionally saved as a GeoJSON or KML file.
 
     Example:
         # Clip river network and save as GeoJSON
-        clipped_river, feedback = clip_river_network(river_network, subbasin_polygon, max_strahler_order=3,
+        clipped_river, feedback = clip_river_network(river_network, subbasin_polygon, min_strahler_order=3,
                                                      line_save_path="path/to/clipped_river", file_extension="geojson")
     """
     # Clip the river network to the subbasin polygon
     clipped_river_network = gpd.clip(river_network, subbasin_polygon)
 
-    try:
-        # Filter the clipped river network by maximum Strahler order
+    if 'strahler' in clipped_river_network:
+        # Filter the clipped river network by minimum Strahler order
         clipped_river_network = clipped_river_network[clipped_river_network["strahler"]
                                                       >= min_strahler_order]
-    except KeyError:
-        raise KeyError(
-            "A column named 'strahler' is not found in the river network attribute table! MAX_STRAHLER cannot be applied!")
+    else:
+        warnings.warn(
+            "The 'strahler' column is not found in river_network data. MIN_STRAHLER cannot be applied!", UserWarning)
 
     feedback = {
         "status": "success" if clipped_river_network.shape[0] > 0 else "fail",
         "message": "No rivers clipped within the given basin." if clipped_river_network.shape[0] == 0 else ""
     }
 
-    # Save the clipped river network as a new GeoJSON or KML file, if output_file is provided
+    # Save the clipped river network as a new GeoJSON or KML file, if line_save_path is provided
     if line_save_path is not None:
         if not line_save_path.endswith(f'.{file_extension}'):
             line_save_path += f'.{file_extension}'
@@ -163,7 +159,6 @@ def clip_river_network(
             pass
 
     return clipped_river_network, feedback
-
 
 
 def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
@@ -194,18 +189,18 @@ def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
     return points_copy
 
 
-def process_watershed_points(points: pd.DataFrame, 
-                              accum: np.ndarray, 
-                              drainage_direction: np.ndarray, 
-                              direction_type: str, 
-                              dr_dir_src: rasterio.io.DatasetReader, 
-                              tif_profile: rasterio.profiles.Profile, 
-                              river_vector: gpd.GeoDataFrame, 
-                              results_path: str, 
-                              vector_extension: str, 
-                              verbose: bool = False, 
-                              n_neighbour: int = 1, 
-                              min_strahler_order: int = 1) -> pd.DataFrame:
+def process_watershed_points(points: pd.DataFrame,
+                             accum: np.ndarray,
+                             drainage_direction: np.ndarray,
+                             direction_type: str,
+                             dr_dir_src: rasterio.io.DatasetReader,
+                             tif_profile: rasterio.profiles.Profile,
+                             river_vector: gpd.GeoDataFrame,
+                             results_path: str,
+                             vector_extension: str,
+                             verbose: bool = False,
+                             n_neighbour: int = 1,
+                             min_strahler_order: int = 1) -> pd.DataFrame:
     """
     Process watershed points and update points_copy with watershed information.
 
@@ -245,27 +240,38 @@ def process_watershed_points(points: pd.DataFrame,
             print(f"[+] Processing point {row.id}.")
 
         # Recalculate coordinates based on flow accumulation
-        new_pour_point = calculate_new_pour_point(
-            accum, pixel_size, (row.long, row.lat), n_neighbour, verbose)
-        new_pour_point_xy = dr_dir_src.index(
-            new_pour_point[0], new_pour_point[1])
-        if verbose:
-            print("New pour point XY:", new_pour_point_xy)
+        if accum is None:
+            new_pour_point = (row.long, row.lat)
+            new_pour_point_xy = dr_dir_src.index(
+                new_pour_point[0], new_pour_point[1])
+            if verbose:
+                print("No changes has been made in pour point XY:",
+                      new_pour_point_xy)
+        else:
+            new_pour_point = calculate_new_pour_point(
+                accum, pixel_size, (row.long, row.lat), n_neighbour, verbose)
+            new_pour_point_xy = dr_dir_src.index(
+                new_pour_point[0], new_pour_point[1])
+            if verbose:
+                print("New pour point XY:", new_pour_point_xy)
 
         # Extract watersheds
-        upstream_area = calculate_upstream( drainage_direction, new_pour_point_xy)
+        upstream_area = calculate_upstream(
+            drainage_direction, new_pour_point_xy)
         rasterized_array = rasterize_array(upstream_area, tif_profile)
 
         # Save watershed polygon and river network as JSON
         subbasin = raster_to_polygon(rasterized_array, save_polygon=True,
-                                     polygon_save_path=os.path.join(results_path, "watershed", f"{row.id}_catchment"), 
+                                     polygon_save_path=os.path.join(
+                                         results_path, "watershed", f"{row.id}_catchment"),
                                      file_extension=vector_extension)
         if river_vector is not None:
             # Clip rivers
             clipped_river_network, feedback = clip_river_network(river_vector, subbasin,
-                                                                min_strahler_order=min_strahler_order,
-                                                                line_save_path=os.path.join(results_path, "river", f"{row.id}_river"), 
-                                                                file_extension=vector_extension)
+                                                                 min_strahler_order=min_strahler_order,
+                                                                 line_save_path=os.path.join(
+                                                                     results_path, "river", f"{row.id}_river"),
+                                                                 file_extension=vector_extension)
 
         # Insert watershed delineation information into the points table
         points_copy = insert_watershed_info(points_copy, row, new_pour_point,

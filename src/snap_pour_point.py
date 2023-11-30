@@ -13,13 +13,17 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
 
     Returns:
         tuple: A tuple containing the data object and pixel size (pixelSizeX, pixelSizeY).
+            Returns None if the specified file path for flow accumulation data is empty or not provided.
 
     Raises:
         FileNotFoundError: If the specified file path for flow accumulation data is not found.
     """
     # Verbose mode: Print information about reading flow accumulation data.
+    if path_flow_acc in ['', None, False]:
+        return None
+
     if verbose:
-        print(f"[+] Reading flow accumulation data at {path_flow_acc}...")
+        print(f"[+] READING flow accumulation data at {path_flow_acc}...")
 
     try:
         data = rasterio.open(path_flow_acc)
@@ -43,7 +47,8 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
               f"# of pixels in (row, col): ({rows}, {cols})\n"
               f"CRS: {crs}")
 
-    return data
+    return data, pixelSizeX, pixelSizeY
+
 
 
 def resample_matrix(central_coord, n):

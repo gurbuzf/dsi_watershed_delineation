@@ -17,19 +17,20 @@ def delineate_upstream(config_file_path):
     """
     Main function for processing hydrological data given the instructions in configuration.py.
     """
-    check_config_file_validity(config_file_path)  # Check if the configuration file is valid
+    check_config_file_validity(
+        config_file_path)  # Check if the configuration file is valid
     config = read_config(config_file_path)
     MODE = config.get('MODE')
     OUTLETS = config.get('OUTLETS')
     WATERSHEDS = config.get('WATERSHEDS')
     RIVERS = config.get('RIVERS')
-    FLOW_ACCUMULATION = config.get('FLOW_ACCUMULATION')
+    FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
     DRAINAGE_DIRECTION = config.get('DRAINAGE_DIRECTION')
     DRAINAGE_DIRECTION_TYPE = config.get('DRAINAGE_DIRECTION_TYPE')
-    VERBOSE = bool(eval(config.get('VERBOSE')))
+    VERBOSE = eval(config.get('VERBOSE'))
     PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))
     RESULTS = config.get('RESULTS')
-    MIN_STRAHLER = int(config.get('MIN_STRAHLER'))
+    MIN_STRAHLER = eval(config.get('MIN_STRAHLER'))
     VECTOR_EXTENSION = config.get('VECTOR_EXTENSION')
 
     # Create the results directory if it doesn't exist
@@ -116,5 +117,7 @@ def delineate_upstream(config_file_path):
     date_time = datetime.now().strftime("%d%m%Y_%H%M")
     points_new.to_csv(os.path.join(
         RESULTS, f'report_{date_time}.csv'), encoding="utf-8-sig")  # Save the results to a CSV file
+
+
 if __name__ == "__main__":
     delineate_upstream('configuration.ini')
