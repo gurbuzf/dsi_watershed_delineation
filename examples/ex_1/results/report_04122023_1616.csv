@@ -1,0 +1,3 @@
+﻿,id,name,area[km2],long,lat,geometry,snap_long,snap_lat,CalculatedArea[km2],river_status,change_rate[%]
+0,station_1,station_a,4365.0,28.175,39.98603,POINT (28.175 39.98603),28.175000000333334,39.986666667,6474.29,-,48.322794959908364
+1,station_2,station_b,,28.15586,40.16015,POINT (28.15586 40.16015),28.156666667,40.16083333366667,3547.79,-,
