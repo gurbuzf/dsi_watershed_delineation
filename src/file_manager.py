@@ -1,6 +1,7 @@
-import os 
+import os
 import warnings
 import configparser
+
 
 def check_config_file_validity(config_file_path):
     """
@@ -23,15 +24,28 @@ def check_config_file_validity(config_file_path):
         UserWarning: If the RESULTS directory does not exist, it will be generated.
 
     """
-    
+
     config = read_config(config_file_path)
     MODE = config.get('MODE')
     OUTLETS = config.get('OUTLETS')
-    WATERSHEDS = config.get('WATERSHEDS')
-    RIVERS = config.get('RIVERS')
-    FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
     DRAINAGE_DIRECTION = config.get('DRAINAGE_DIRECTION')
     DRAINAGE_DIRECTION_TYPE = config.get('DRAINAGE_DIRECTION_TYPE')
+
+    try:
+        WATERSHEDS = eval(config.get('WATERSHEDS'))
+    except NameError:
+        WATERSHEDS = config.get('WATERSHEDS')
+
+    try: 
+        RIVERS = eval(config.get('RIVERS'))
+    except NameError:
+        RIVERS = config.get('RIVERS')
+
+    try:
+        FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
+    except NameError:
+        FLOW_ACCUMULATION = config.get('FLOW_ACCUMULATION')
+
     VERBOSE = eval(config.get('VERBOSE'))
     PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))
     RESULTS = config.get('RESULTS')
@@ -39,28 +53,28 @@ def check_config_file_validity(config_file_path):
     VECTOR_EXTENSION = config.get('VECTOR_EXTENSION')
 
     if MODE == "single":
-        if not os.path.isfile(RIVERS):
-            print(os.path.join(os.getcwd(), RIVERS))
-            print(os.path.isfile(os.path.join(os.getcwd(), RIVERS)))
-            raise ValueError("In Single Mode, Rivers Vector Path must be a file not a folder. "
-                             f"Please check RIVERS = {RIVERS}")
-
-        if not os.path.isfile(FLOW_ACCUMULATION):
-            raise ValueError("In Single Mode, Flow Accumulation Path must be a file not a folder. "
-                             f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
+        if not RIVERS in ['', None, False]:
+            if not os.path.isfile(RIVERS):
+                raise ValueError("In Single Mode, Rivers Vector Path must be a file not a folder. "
+                                 f"Please check RIVERS = {RIVERS}")
+        if not FLOW_ACCUMULATION in ['', None, False]:
+            if not os.path.isfile(FLOW_ACCUMULATION):
+                raise ValueError("In Single Mode, Flow Accumulation Path must be a file not a folder. "
+                                 f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
 
         if not os.path.isfile(DRAINAGE_DIRECTION):
             raise ValueError("In Single Mode, Drainage Direction Path must be a file not a folder. "
                              f"Please check DRAINAGE_DIRECTION = {DRAINAGE_DIRECTION}")
 
     elif MODE == "partial":
-        if not os.path.isdir(RIVERS):
-            raise ValueError("In Partial Mode, Rivers Vector Path must be a folder not a file. "
-                             f"Please check RIVERS = {RIVERS}")
-
-        if not os.path.isdir(FLOW_ACCUMULATION):
-            raise ValueError("In Partial Mode, Flow Accumulation Path must be a folder not a file. "
-                             f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
+        if not RIVERS in ['', None, False]:
+            if not os.path.isdir(RIVERS):
+                raise ValueError("In Partial Mode, Rivers Vector Path must be a folder not a file. "
+                                 f"Please check RIVERS = {RIVERS}")
+        if not FLOW_ACCUMULATION in ['', None, False]:
+            if not os.path.isdir(FLOW_ACCUMULATION):
+                raise ValueError("In Partial Mode, Flow Accumulation Path must be a folder not a file. "
+                                 f"Please check FLOW_ACCUMULATION = {FLOW_ACCUMULATION}")
 
         if not os.path.isdir(DRAINAGE_DIRECTION):
             raise ValueError("In Partial Mode, Drainage Direction Path must be a folder not a file. "
@@ -71,15 +85,15 @@ def check_config_file_validity(config_file_path):
 
     if DRAINAGE_DIRECTION_TYPE not in ["arcgis", "grass"]:
         raise ValueError("DRAINAGE_DIRECTION_TYPE can only be 'arcgis' or 'grass'."
-                         "Please check the DRAINAGE_DIRECTION_TYPE parameter in configuration.py.")
-
-    if PIXEL2SEARCH >= 6:
-        warnings.warn(f"PIXEL2SEARCH is set to {PIXEL2SEARCH}! This value seems high. "
-                      "Unexpected results may occur!", UserWarning)
+                         "Please check the DRAINAGE_DIRECTION_TYPE parameter in configuration file.")
+    if not FLOW_ACCUMULATION in ['', None, False]:
+        if PIXEL2SEARCH >= 6:
+            warnings.warn(f"PIXEL2SEARCH is set to {PIXEL2SEARCH}! This value seems high. "
+                          "Unexpected results may occur!", UserWarning)
 
     if VERBOSE not in [True, False]:
         raise ValueError("VERBOSE can only be True, False, 1, or 0. "
-                         "Please check the VERBOSE parameter in configuration.py.")
+                         "Please check the VERBOSE parameter in in configuration file.")
 
     if not os.path.isdir(RESULTS):
         warnings.warn(
@@ -87,7 +101,6 @@ def check_config_file_validity(config_file_path):
 
     if VECTOR_EXTENSION not in ["kml", "geojson"]:
         raise ValueError('VECTOR_EXTENSION should be kml (default), geojson.')
-
 
 
 def create_results_directory(path, verbose=False):
@@ -121,8 +134,8 @@ def create_results_directory(path, verbose=False):
     # os.makedirs(web_dir, exist_ok=True)
 
     if verbose:
-        print(f"{path} folder is created! The results will be stored in this folder.")
-        
+        print(f"[+] {path} folder is created! The results will be stored in this folder.\n")
+
 
 def read_config(config_file_path):
     if not os.path.exists(config_file_path):
@@ -135,4 +148,3 @@ def read_config(config_file_path):
         raise ValueError("Settings section not found in the config file.")
 
     return config['Settings']
-

@@ -141,8 +141,7 @@ def clip_river_network(river_network, subbasin_polygon, min_strahler_order, line
             "The 'strahler' column is not found in river_network data. MIN_STRAHLER cannot be applied!", UserWarning)
 
     feedback = {
-        "status": "success" if clipped_river_network.shape[0] > 0 else "fail",
-        "message": "No rivers clipped within the given basin." if clipped_river_network.shape[0] == 0 else ""
+        "river_status": "No rivers clipped within the given basin." if clipped_river_network.shape[0] == 0 else ""
     }
 
     # Save the clipped river network as a new GeoJSON or KML file, if line_save_path is provided
@@ -170,7 +169,7 @@ def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
         row (pandas.Series): Row of the DataFrame for which information is to be inserted.
         new_pour_point (tuple): Coordinates of the new pour point in the format (x, y).
         area (float): Area in square kilometers.
-        feedback (dict): Feedback dictionary containing status and message.
+        feedback (dict): Feedback dictionary containing river_status.
 
     Returns:
         pandas.DataFrame: Updated DataFrame with watershed information.
@@ -182,9 +181,8 @@ def insert_watershed_info(points_copy, row, new_pour_point, area, feedback):
     points_copy.loc[points_copy["id"] ==
                     row.id, "snap_lat"] = new_pour_point[1]
     points_copy.loc[points_copy["id"] == row.id, "CalculatedArea[km2]"] = area
-    points_copy.loc[points_copy["id"] == row.id, "status"] = feedback["status"]
     points_copy.loc[points_copy["id"] ==
-                    row.id, "comment"] = feedback["message"]
+                    row.id, "river_status"] = feedback["river_status"]
 
     return points_copy
 
@@ -235,7 +233,7 @@ def process_watershed_points(points: pd.DataFrame,
     pixelSizeX, pixelSizeY = dr_dir_src.transform[0], dr_dir_src.transform[4]
     pixel_size = (pixelSizeX, pixelSizeY)
 
-    for index, row in points.iterrows():
+    for _, row in points.iterrows():
         if verbose:
             print(f"[+] Processing point {row.id}.")
 
@@ -272,7 +270,10 @@ def process_watershed_points(points: pd.DataFrame,
                                                                  line_save_path=os.path.join(
                                                                      results_path, "river", f"{row.id}_river"),
                                                                  file_extension=vector_extension)
-
+        else:
+            feedback = {
+            "river_status": "-"
+        }
         # Insert watershed delineation information into the points table
         points_copy = insert_watershed_info(points_copy, row, new_pour_point,
                                             subbasin["CalculatedArea[km2]"][0], feedback)

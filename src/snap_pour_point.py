@@ -23,7 +23,7 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
         return None
 
     if verbose:
-        print(f"[+] READING flow accumulation data at {path_flow_acc}...")
+        print(f"Reading flow accumulation data at {path_flow_acc}...")
 
     try:
         data = rasterio.open(path_flow_acc)
@@ -45,9 +45,10 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
     if verbose:
         print(f"Flow Accumulation Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
               f"# of pixels in (row, col): ({rows}, {cols})\n"
-              f"CRS: {crs}")
+              f"CRS: {crs}\n", 
+              "-"*50)
 
-    return data, pixelSizeX, pixelSizeY
+    return data
 
 
 

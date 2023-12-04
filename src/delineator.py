@@ -53,9 +53,10 @@ def read_drainage_direction(drainage_direction_path, verbose=False):
 
             # Verbose mode: Print the drainage direction data description.
             if verbose:
-                print(f"Drainage Direction Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
+                print(f"DRAINAGE DIRECTION Data Description:\nPixel Size: ({pixelSizeX}, {pixelSizeY})\n"
                       f"# of pixels in (row, col): ({rows}, {cols})\n"
-                      f"CRS: {crs}")
+                      f"CRS: {crs}\n", 
+                      "-"*50)
 
             return drainage_direction, tiff_profile, src
 

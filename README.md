@@ -16,20 +16,7 @@ This Python package has been specifically designed and tested for delineating wa
 
 ---
 
-## Data
 
-To be updated!
-
-<!-- - Hydrologicaly conditioned MERIT DEM with approximately 90 meter pixel resolution.
-    - 8 digit drainage/flow direction data calculated by QGIS Grass.
-    - Flow Accumulation Data calculated by QGIS Grass.
-- Vector data produced by GD of Turkish Water Management.
-     - Shapefile of the 25 watershed boundaries in EPSG4326 projection.
-     - Shapefile of Countrywide River Network in EPSG4326 projection. -->
-
-## Features
-
-To be updated!
 
 ## Installation
 
@@ -52,6 +39,32 @@ conda install --file requirements.txt
 ```sh
 python run.py --config_path=configuration.ini
 ```
+## Data
+
+To be updated!
+
+<!-- - Hydrologicaly conditioned MERIT DEM with approximately 90 meter pixel resolution.
+    - 8 digit drainage/flow direction data calculated by QGIS Grass.
+    - Flow Accumulation Data calculated by QGIS Grass.
+- Vector data produced by GD of Turkish Water Management.
+     - Shapefile of the 25 watershed boundaries in EPSG4326 projection.
+     - Shapefile of Countrywide River Network in EPSG4326 projection. -->
+
+## Features
+
+To be updated!
+
+## Examples
+
+- Examples are provided in the **'/examples'** folder. Please thoroughly review them and run at least one to test your working environment before proceeding with your data.
+  - After cloning the repository and installing the requirements.txt,execute the following script. Ensure that you are in the cloned directory named **_'/path/to/directory/watt-watershed-delineation-tool'_**.
+ 
+
+    ```sh
+    python run.py --config_path=examples/ex_1/config_ex1.ini
+    ```
+
+- Feel free to experiment with the optional parameters in the configuration file—it's highly recommended for a more customized experience!
 
 ## Acknowledgemet
 
