@@ -36,7 +36,7 @@ def check_config_file_validity(config_file_path):
     except NameError:
         WATERSHEDS = config.get('WATERSHEDS')
 
-    try: 
+    try:
         RIVERS = eval(config.get('RIVERS'))
     except NameError:
         RIVERS = config.get('RIVERS')
@@ -79,6 +79,9 @@ def check_config_file_validity(config_file_path):
         if not os.path.isdir(DRAINAGE_DIRECTION):
             raise ValueError("In Partial Mode, Drainage Direction Path must be a folder not a file. "
                              f"Please check DRAINAGE_DIRECTION = {DRAINAGE_DIRECTION}")
+        if WATERSHEDS in ['', None]:
+            raise ValueError("In Partial Mode, A geojson file including all watersheds must be provided. "
+                             f"Please check WATERSHEDS = {WATERSHEDS} in the configuration file!")
     else:
         raise ValueError("MODE can only be either 'single' or 'partial'! "
                          "Please check the configuration.py file and arrange the MODE parameter accordingly.")
@@ -134,7 +137,8 @@ def create_results_directory(path, verbose=False):
     # os.makedirs(web_dir, exist_ok=True)
 
     if verbose:
-        print(f"[+] {path} folder is created! The results will be stored in this folder.\n")
+        print(
+            f"[+] {path} folder is created! The results will be stored in this folder.\n")
 
 
 def read_config(config_file_path):

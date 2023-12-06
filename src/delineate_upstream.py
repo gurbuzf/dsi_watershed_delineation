@@ -107,6 +107,7 @@ def delineate_upstream(config_file_path):
 
             river_vector = load_river_network(
                 os.path.join(RIVERS, watershed + '.geojson'))  # Load river network data
+
             # Process watershed points
             points_watershed = process_watershed_points(filtered_points_labelled,
                                                         accum,

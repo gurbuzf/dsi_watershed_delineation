@@ -145,17 +145,17 @@ def clip_river_network(river_network, subbasin_polygon, min_strahler_order, line
     }
 
     # Save the clipped river network as a new GeoJSON or KML file, if line_save_path is provided
+
     if line_save_path is not None:
         if not line_save_path.endswith(f'.{file_extension}'):
             line_save_path += f'.{file_extension}'
-        if feedback["status"] == "success":
-            if file_extension == "kml":
-                geopandas2KML(clipped_river_network,
-                              line_save_path, vector_type="linestring")
-            elif file_extension == "geojson":
-                clipped_river_network.to_file(line_save_path, driver="GeoJSON")
-        else:
-            pass
+  
+        if file_extension == "kml":
+            geopandas2KML(clipped_river_network,
+                            line_save_path, vector_type="linestring")
+        elif file_extension == "geojson":
+            clipped_river_network.to_file(line_save_path, driver="GeoJSON")
+  
 
     return clipped_river_network, feedback
 
@@ -272,8 +272,8 @@ def process_watershed_points(points: pd.DataFrame,
                                                                  file_extension=vector_extension)
         else:
             feedback = {
-            "river_status": "-"
-        }
+                "river_status": "-"
+            }
         # Insert watershed delineation information into the points table
         points_copy = insert_watershed_info(points_copy, row, new_pour_point,
                                             subbasin["CalculatedArea[km2]"][0], feedback)

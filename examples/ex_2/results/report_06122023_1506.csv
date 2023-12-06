@@ -1,0 +1,5 @@
+﻿,id,name,area[km2],long,lat,index_right,Watershed_ID,Watershed_Name,snap_long,snap_lat,CalculatedArea[km2],river_status,change_rate[%]
+0,station_1,station_a,,28.98354,39.60754,1,W-2,second_watershed,28.9825,39.6075,2542.23,,
+1,station_2,station_b,,28.7051,39.78688,1,W-2,second_watershed,28.705000000000002,39.7875,4569.18,,
+2,station_3,station_c,78.0,29.52491,39.66751,0,W-1,first_watershed,29.524166666666666,39.66833333333334,1768.32,,2167.076923076923
+3,station_4,station_da,50.0,29.61508,39.41294,0,W-1,first_watershed,29.615000000000002,39.41416666666667,1045.32,,1990.64
