@@ -1,6 +1,6 @@
 # W A T T
 
-:sweat_drops: Watershed Delineation Tool :sweat_drops:
+Watershed Delineation Tool :droplet:
 
 Developed for the [Turkish State Hydraulic Services (DSI)](https://www.dsi.gov.tr/).
 
@@ -44,7 +44,7 @@ python run.py --config_path=configuration.ini
 
 - The examples utilize **MERIT Hydro** dataset (Yamazaki et al., 2019). The data has a 3 arc-second (~90 m) resolution. The drainage direction data in this context employs ArcGIS's flow direction coding, utilizing values that span from 1 to 128. These values correspond to the eight potential flow directions and are structured as powers of 2, progressing in a clockwise fashion :arrows_clockwise: . Notably, the value 1 (or 128) signifies the flow direction towards the east (northeast).
 
-- :earth_asia: Throughout this project, I've had the opportunity to test various publicly available Digital Elevation Models (DEMs). It's worth noting that, from my evaluation, the MERIT Hydro dataset stands out as the superior choice. :earth_asia:
+- Throughout this project, I've had the opportunity to test various publicly available Digital Elevation Models (DEMs). It's worth noting that, from my evaluation, the MERIT Hydro dataset stands out as the superior choice. :earth_asia:
 
 ## Examples
 
@@ -72,7 +72,7 @@ python run.py --config_path=configuration.ini
 
 - :rocket: ChatGPT :rocket: has played an active role in writing docstrings and enhancing the code. Unfortunately, the ChatGPT sometimes reflects its creators' political biases in its responses, rather than adhering strictly to widely accepted and historical facts (e.g., occupied Palestine). Nevertheless, it remains a useful/powerful tool for writing, reviewing, and documenting code. Use with :warning:.
 
-- Many thanks to colleagues at DSI for providing feedback on the accuracy of WATT's outputs.
+- Many thanks :tulip: to colleagues at DSI for providing feedback on the accuracy of WATT's outputs.
 
 ## Future Work
 
