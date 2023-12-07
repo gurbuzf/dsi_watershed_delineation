@@ -33,17 +33,17 @@ def check_config_file_validity(config_file_path):
 
     try:
         WATERSHEDS = eval(config.get('WATERSHEDS'))
-    except NameError:
+    except (NameError, SyntaxError):
         WATERSHEDS = config.get('WATERSHEDS')
 
     try:
         RIVERS = eval(config.get('RIVERS'))
-    except NameError:
+    except (NameError, SyntaxError):
         RIVERS = config.get('RIVERS')
 
     try:
         FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
-    except NameError:
+    except (NameError, SyntaxError):
         FLOW_ACCUMULATION = config.get('FLOW_ACCUMULATION')
 
     VERBOSE = eval(config.get('VERBOSE'))

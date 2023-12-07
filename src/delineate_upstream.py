@@ -17,9 +17,9 @@ def delineate_upstream(config_file_path):
     """
     Main function for processing hydrological data given the instructions in configuration.py.
     """
-
-    check_config_file_validity(
-        config_file_path)  # Check if the configuration file is valid
+    # Check if the configuration file is valid
+    check_config_file_validity(config_file_path)  
+    # Retrieve infromation from config file
     config = read_config(config_file_path)
     MODE = config.get('MODE')
     OUTLETS = config.get('OUTLETS')
@@ -28,18 +28,19 @@ def delineate_upstream(config_file_path):
 
     try:
         WATERSHEDS = eval(config.get('WATERSHEDS'))
-    except NameError:
+    except (NameError, SyntaxError):
         WATERSHEDS = config.get('WATERSHEDS')
 
     try:
         RIVERS = eval(config.get('RIVERS'))
-    except NameError:
+    except (NameError, SyntaxError):
         RIVERS = config.get('RIVERS')
 
     try:
         FLOW_ACCUMULATION = eval(config.get('FLOW_ACCUMULATION'))
-    except NameError:
+    except (NameError, SyntaxError):
         FLOW_ACCUMULATION = config.get('FLOW_ACCUMULATION')
+
 
     VERBOSE = eval(config.get('VERBOSE'))
     PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))

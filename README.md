@@ -50,9 +50,9 @@ python run.py --config_path=configuration.ini
 
 - The drainage direction and flow accumulation data for Turkey's watersheds are organized and readily available in a [Google Drive folder](https://drive.google.com/drive/folders/1ZSKWTHIF7_VplBLWNnf4QNRHmntlNfBf?usp=drive_link). If you're interested in delineating the upstream area of multiple points distributed across Türkiye, feel free to download the folder and explore the WATT tool.
 
-<img src="doc/figures/TurkiyeWatersheds.png" alt="WATT description" />
+<img src="doc/figures/TurkiyeWatersheds.png" alt="Turkiye Watershed Borders" />
 
-- The river vector data shared in the folder is produced by the General Directorate of Water Management, Turkiye and officially distributed to relevant institutions in 2022. 
+- The river vector data shared in the folder is produced by [the General Directorate of Water Management](https://www.tarimorman.gov.tr/SYGM#), Turkiye and officially distributed to relevant institutions in 2022. 
 
 ## Examples
 
@@ -64,15 +64,15 @@ python run.py --config_path=configuration.ini
     python run.py --config_path=examples/ex_1/config_ex1.ini
     ```
 
-- :dizzy: Feel free to experiment with the optional parameters in the configuration file—it's highly recommended for a more customized experience!
+- Feel free to experiment with the optional parameters in the configuration file—it's highly recommended for a more customized experience! :dizzy:
 
-### Example-1 **[MODE = single]**
+### Example- **[MODE = single]**
 
-- This experiment uses the _single_ mode, which requires drainage data with a .tif extension. While including flow accumulation data (.tif) is at the user's discretion, it can enhance the analysis if available. Additionally, users may provide pre-existing river network vector data in GeoJSON format through the configuration file. Upon calculating the upstream drainage areas for specified pour points, the relevant river network within that delineated region will be intelligently clipped and subsequently stored in the results folder.
+- :one: This experiment uses the _single_ mode, which requires drainage data with a .tif extension. While including flow accumulation data (.tif) is at the user's discretion, it can enhance the analysis if available. Additionally, users may provide pre-existing river network vector data in GeoJSON format through the configuration file. Upon calculating the upstream drainage areas for specified pour points, the relevant river network within that delineated region will be intelligently clipped and subsequently stored in the results folder.
 
 ### Example-2 **[MODE = partial]**
 
-- If you're dealing with a large raster data that might slow down the WATT tool, you can use the _partial_ mode to lighten the computational load. Essentially, Partial mode in the provided configuration offers a versatile and powerful functionality for hydrological analysis by accommodating multiple pour points across various watersheds. The example provided demonstrates how to use the partial mode efficiently. :heavy_exclamation_mark: To use it, you need a GeoJSON file with watershed borders (each having a unique ID in the attribute table, typically named "Watershed_ID"):heavy_exclamation_mark:. For each watershed, you'll have a corresponding drainage direction data named after its unique ID and with a .tif format. The same naming convention applies to optional flow accumulation data and river network vectors if provided. This experiment serves as a practical illustration of implementing the partial mode, showcasing its versatility in handling complex hydrological analyses involving multiple points and diverse watershed conditions.
+- :two: If you're dealing with a large raster data that might slow down the WATT tool, you can use the _partial_ mode to lighten the computational load. Essentially, Partial mode in the provided configuration offers a versatile and powerful functionality for hydrological analysis by accommodating multiple pour points across various watersheds. The example provided demonstrates how to use the partial mode efficiently. :heavy_exclamation_mark: To use it, you need a GeoJSON file with watershed borders (each having a unique ID in the attribute table, typically named "Watershed_ID"):heavy_exclamation_mark:. For each watershed, you'll have a corresponding drainage direction data named after its unique ID and with a .tif format. The same naming convention applies to optional flow accumulation data and river network vectors if provided. This experiment serves as a practical illustration of implementing the partial mode, showcasing its versatility in handling complex hydrological analyses involving multiple points and diverse watershed conditions.
 
 ## Acknowledgemet
 
