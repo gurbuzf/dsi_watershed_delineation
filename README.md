@@ -46,6 +46,14 @@ python run.py --config_path=configuration.ini
 
 - Throughout this project, I've had the opportunity to test various publicly available Digital Elevation Models (DEMs). It's worth noting that, from my evaluation, the MERIT Hydro dataset stands out as the superior choice. :earth_asia:
 
+### MERIT-Hydro Data for Turkiye
+
+- The drainage direction and flow accumulation data for Turkey's watersheds are organized and readily available in a [Google Drive folder](https://drive.google.com/drive/folders/1ZSKWTHIF7_VplBLWNnf4QNRHmntlNfBf?usp=drive_link). If you're interested in delineating the upstream area of multiple points distributed across Türkiye, feel free to download the folder and explore the WATT tool.
+
+<img src="doc/figures/TurkiyeWatersheds.png" alt="WATT description" />
+
+- The river vector data shared in the folder is produced by the General Directorate of Water Management, Turkiye and officially distributed to relevant institutions in 2022. 
+
 ## Examples
 
 - Examples are provided in the **'/examples'** folder. Please thoroughly review them and run at least one to test your working environment before proceeding with your data.
