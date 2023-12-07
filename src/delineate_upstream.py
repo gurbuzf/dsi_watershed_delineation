@@ -18,7 +18,7 @@ def delineate_upstream(config_file_path):
     Main function for processing hydrological data given the instructions in configuration.py.
     """
     # Check if the configuration file is valid
-    check_config_file_validity(config_file_path)  
+    check_config_file_validity(config_file_path)
     # Retrieve infromation from config file
     config = read_config(config_file_path)
     MODE = config.get('MODE')
@@ -41,7 +41,6 @@ def delineate_upstream(config_file_path):
     except (NameError, SyntaxError):
         FLOW_ACCUMULATION = config.get('FLOW_ACCUMULATION')
 
-
     VERBOSE = eval(config.get('VERBOSE'))
     PIXEL2SEARCH = int(config.get('PIXEL2SEARCH'))
     RESULTS = config.get('RESULTS')
@@ -57,8 +56,11 @@ def delineate_upstream(config_file_path):
     points = read_outlets(OUTLETS)
 
     if MODE == "single":  # If processing mode is 'single'
-        # Read flow accumulation data
-        accum = read_flow_accumulation_tif(FLOW_ACCUMULATION, verbose=VERBOSE)
+        if FLOW_ACCUMULATION in ['', None, False]:
+            accum = None
+        else:
+            # Read flow accumulation data
+            accum = read_flow_accumulation_tif(FLOW_ACCUMULATION, verbose=VERBOSE)
 
         # Read drainage direction data
         drainage_direction, tif_profile, dr_dir_src = read_drainage_direction(
@@ -99,9 +101,12 @@ def delineate_upstream(config_file_path):
                 f"Delineating the upstream area of the points in {watershed}...")
 
             filtered_points_labelled = points_labelled[points_labelled["Watershed_ID"] == watershed]
-
-            accum = read_flow_accumulation_tif(
-                os.path.join(FLOW_ACCUMULATION, watershed + '.tif'))  # Read flow accumulation data
+            if FLOW_ACCUMULATION in ['', None, False]:
+                accum = None
+            else:
+                # Read flow accumulation data
+                accum = read_flow_accumulation_tif(
+                                            os.path.join(FLOW_ACCUMULATION, watershed + '.tif'))  
 
             drainage_direction, tif_profile, dr_dir_src = read_drainage_direction(
                 os.path.join(DRAINAGE_DIRECTION, watershed + '.tif'))  # Read drainage direction data

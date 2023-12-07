@@ -149,13 +149,12 @@ def clip_river_network(river_network, subbasin_polygon, min_strahler_order, line
     if line_save_path is not None:
         if not line_save_path.endswith(f'.{file_extension}'):
             line_save_path += f'.{file_extension}'
-  
+
         if file_extension == "kml":
             geopandas2KML(clipped_river_network,
-                            line_save_path, vector_type="linestring")
+                          line_save_path, vector_type="linestring")
         elif file_extension == "geojson":
             clipped_river_network.to_file(line_save_path, driver="GeoJSON")
-  
 
     return clipped_river_network, feedback
 

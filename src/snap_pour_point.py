@@ -19,9 +19,7 @@ def read_flow_accumulation_tif(path_flow_acc, verbose=False):
         FileNotFoundError: If the specified file path for flow accumulation data is not found.
     """
     # Verbose mode: Print information about reading flow accumulation data.
-    if path_flow_acc in ['', None, False]:
-        return None
-
+    
     if verbose:
         print(f"Reading flow accumulation data at {path_flow_acc}...")
 
