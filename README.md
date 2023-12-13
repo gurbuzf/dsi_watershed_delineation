@@ -52,7 +52,7 @@ python run.py --config_path=configuration.ini
 
 <img src="doc/figures/TurkiyeWatersheds.png" alt="Turkiye Watershed Borders" />
 
-- The river vector data shared in the folder is produced by [the General Directorate of Water Management](https://www.tarimorman.gov.tr/SYGM#), Turkiye and officially distributed to relevant institutions in 2022. 
+- The river vector data shared in the folder is produced by [the General Directorate of Water Management](https://www.tarimorman.gov.tr/SYGM#), Turkiye and officially distributed to relevant institutions in 2022.
 
 ## Examples
 
@@ -66,7 +66,7 @@ python run.py --config_path=configuration.ini
 
 - Feel free to experiment with the optional parameters in the configuration file—it's highly recommended for a more customized experience! :dizzy:
 
-### Example- **[MODE = single]**
+### Example-1 **[MODE = single]**
 
 - :one: This experiment uses the _single_ mode, which requires drainage data with a .tif extension. While including flow accumulation data (.tif) is at the user's discretion, it can enhance the analysis if available. Additionally, users may provide pre-existing river network vector data in GeoJSON format through the configuration file. Upon calculating the upstream drainage areas for specified pour points, the relevant river network within that delineated region will be intelligently clipped and subsequently stored in the results folder.
 
